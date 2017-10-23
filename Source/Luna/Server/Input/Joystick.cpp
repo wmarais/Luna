@@ -1,21 +1,21 @@
-#include "../../../../Include/Luna/Server/Input/Controller.hpp"
+#include "../../../../Include/Luna/Server/Input/Joystick.hpp"
 
 using namespace Luna::Server;
 
 //==============================================================================
-Controller::Controller(std::string path)
+Joystick::Joystick(std::string path)
 {
   // Open the controller.
 }
 
 //==============================================================================
-Controller::~Controller()
+Joystick::~Joystick()
 {
   // Close the controller.
 }
 
 //==============================================================================
-void Controller::monitor(std::shared_ptr<SessionManager> sm)
+void Joystick::monitor(std::shared_ptr<SessionManager> sm)
 {
   // Keep looping until stop() is called.
   while(isRunning())

@@ -7,9 +7,16 @@ namespace Luna
 {
   namespace Server
   {
-    class Mouse
+    class Mouse : public Input
     {
+      std::string fPath;
 
+    public:
+
+      Mouse(const std::string & path);
+      ~Mouse();
+
+      void monitor(std::shared_ptr<SessionManager> sm);
     };
   }
 }

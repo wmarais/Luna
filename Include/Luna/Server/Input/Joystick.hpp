@@ -7,11 +7,11 @@ namespace Luna
 {
   namespace Server
   {
-    class Controller : public Input
+    class Joystick : public Input
     {
     public:
-      Controller(std::string path);
-      ~Controller();
+      Joystick(std::string path);
+      ~Joystick();
 
       void monitor(std::shared_ptr<SessionManager> sm);
     };

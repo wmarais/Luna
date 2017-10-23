@@ -2,7 +2,7 @@
 
 using namespace Luna::Server;
 
-void SessionManager::run()
+void SessionManager::start()
 {
 
 }

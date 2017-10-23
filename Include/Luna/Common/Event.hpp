@@ -38,6 +38,9 @@ namespace Luna
       // The timestamp of the event.
       uint64_t fTimeStamp;
 
+      // The uuid of the event source.
+      uuid_t fUUID;
+
       // The event data.
       union
       {

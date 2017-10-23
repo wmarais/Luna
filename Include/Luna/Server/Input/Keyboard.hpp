@@ -9,8 +9,14 @@ namespace Luna
   {
     class Keyboard : public Input
     {
+      std::string fPath;
 
     public:
+
+      Keyboard(const std::string & path);
+      ~Keyboard();
+
+      void monitor(std::shared_ptr<SessionManager> sm);
 
     };
   }

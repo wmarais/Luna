@@ -27,6 +27,8 @@
 #include "../Common.hpp"
 #include "SessionManager.hpp"
 
+#include "../../../Include/Luna/Common.hpp"
+
 namespace Luna
 {
   namespace Server

@@ -29,7 +29,7 @@ namespace Luna
 
     public:
 
-      void run();
+      void start();
 
     };
   }
