@@ -1,13 +1,13 @@
 #ifndef LUNA_SERVER_INPUT_CONTROLLER_HPP
 #define LUNA_SERVER_INPUT_CONTROLLER_HPP
 
-#include "../Input.hpp"
+#include "InputDevice.hpp"
 
 namespace Luna
 {
   namespace Server
   {
-    class Joystick : public Input
+    class Joystick : public InputDevice
     {
     public:
       Joystick(std::string path);

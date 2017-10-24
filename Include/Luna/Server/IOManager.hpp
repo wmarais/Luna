@@ -20,19 +20,19 @@ namespace Luna
       // The mice that are monitored. The key is a string to the dev node for
       // the mouse.
       //------------------------------------------------------------------------
-      std::map<std::string, std::unique_ptr<Input>> fMice;
+      std::map<std::string, std::unique_ptr<InputDevice>> fMice;
 
       //------------------------------------------------------------------------
       // The keyboards that are monitored. The key is a string to the dev node
       // for the keyboards.
       //------------------------------------------------------------------------
-      std::map<std::string, std::unique_ptr<Input>> fKeyboards;
+      std::map<std::string, std::unique_ptr<InputDevice>> fKeyboards;
 
       //------------------------------------------------------------------------
       // The joysticks that are monitored. The key is a string to the dev node
       // for the joystick.
       //------------------------------------------------------------------------
-      std::map<std::string, std::unique_ptr<Input>> fJoysticks;
+      std::map<std::string, std::unique_ptr<InputDevice>> fJoysticks;
 
       //------------------------------------------------------------------------
       // Scan for the devnodes of the specified subsystems with the particular
@@ -71,6 +71,11 @@ namespace Luna
                                             const char * property);
 
       //------------------------------------------------------------------------
+      // Setup the input devices based on the user configurations.
+      //------------------------------------------------------------------------
+      void setupInput(const Luna::Common::Settings * settings);
+
+      //------------------------------------------------------------------------
       // Delete the unused constructors as well as the copy and assignment
       // operators.
       //------------------------------------------------------------------------
@@ -83,7 +88,7 @@ namespace Luna
       // Initialise the IO Manager and create all the input objects to monitor
       // all the required inputs.
       //------------------------------------------------------------------------
-      IOManager(Luna::Common::Settings * settings);
+      IOManager(const Luna::Common::Settings * settings);
 
       //------------------------------------------------------------------------
       // Start monitoring the input devices for input events.

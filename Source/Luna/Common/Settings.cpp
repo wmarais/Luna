@@ -26,7 +26,7 @@ Settings::Settings(const std::string & settingsPath) :
 Settings::~Settings() {}
 
 //==============================================================================
-bool Settings::getValue(const std::string & path, bool def)
+bool Settings::getValue(const std::string & path, bool def) const
 {
   // The return value.
   bool ret = false;
@@ -43,7 +43,7 @@ bool Settings::getValue(const std::string & path, bool def)
 }
 
 //==============================================================================
-int64_t Settings::getValue(const std::string & path, int64_t def)
+int64_t Settings::getValue(const std::string & path, int64_t def) const
 {
   // The return value.
   long long ret = 0;
@@ -60,7 +60,7 @@ int64_t Settings::getValue(const std::string & path, int64_t def)
 }
 
 //==============================================================================
-double Settings::getValue(const std::string & path, double def)
+double Settings::getValue(const std::string & path, double def) const
 {
   // The return value.
   double ret = 0.0;
@@ -78,7 +78,7 @@ double Settings::getValue(const std::string & path, double def)
 
 //==============================================================================
 std::string Settings::getValue(const std::string & path,
-                               const std::string & def)
+                               const std::string & def) const
 {
   // The return value.
   std::string ret;
@@ -93,3 +93,12 @@ std::string Settings::getValue(const std::string & path,
   // Return the value read.
   return ret;
 }
+
+//==============================================================================
+std::vector<std::string> Settings::getArray(const std::string & path) const
+{
+
+  return std::vector<std::string>();
+}
+
+

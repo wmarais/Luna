@@ -4,7 +4,7 @@ using namespace Luna::Common;
 using namespace Luna::Server;
 
 //==============================================================================
-IOManager::IOManager(Settings * settings)
+IOManager::IOManager(const Settings * settings)
   : fUDEV(udev_new(), udev_unref)
 { 
   // Validate the settings parameter.
@@ -16,53 +16,8 @@ IOManager::IOManager(Settings * settings)
     LUNA_THOW_RUNTIME_ERROR("Failed to create UDEV device.");
   }
 
-  // TODO - Implement the getArray() function in the settings and initialise
-  //        the vectors to the user defined arrays of input devices.
-  std::vector<std::string> mice;
-  std::vector<std::string> keyboards;
-  std::vector<std::string> joysticks;
-
-  // Check if we should try to autodetect all the attached mice.
-  if(settings->getValue("detect.input.mice", true))
-  {
-    LUNA_LOG_INFO("Scanning for mice.");
-    mice = scanDevNodes("input", "ID_INPUT_MOUSE");
-  }
-
-  // Check if we should try and autodetect all the attached keyboards.
-  if(settings->getValue("detect.input.keyboards", true))
-  {
-    LUNA_LOG_INFO("Scanning for keyboards.");
-    keyboards = scanDevNodes("input", "ID_INPUT_KEYBOARD");
-  }
-
-  // Check if we should try and autodetect all the attached joysticks.
-  if(settings->getValue("detect.input.joysticks", true))
-  {
-    LUNA_LOG_INFO("Scanning for joysticks.");
-    joysticks = scanDevNodes("input", "ID_INPUT_JOYSTICK");
-  }
-
-  // Create all the mice.
-  for(std::string devNode : mice)
-  {
-    LUNA_LOG_INFO("Creating Mouse: " << devNode);
-    fMice[devNode] = std::make_unique<Mouse>(devNode);
-  }
-
-  // Create all the keyboards.
-  for(std::string devNode : keyboards)
-  {
-    LUNA_LOG_INFO("Creating Keyboard: " << devNode);
-    fKeyboards[devNode] = std::make_unique<Joystick>(devNode);
-  }
-
-  // Create all the joysticks.
-  for(std::string devNode : joysticks)
-  {
-    LUNA_LOG_INFO("Creating Joystick: " << devNode);
-    fJoysticks[devNode] = std::make_unique<Joystick>(devNode);
-  }
+  // Setup the input devices.
+  setupInput(settings);
 }
 
 //==============================================================================
@@ -146,6 +101,89 @@ std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
 
   // Return the list of dev nodes detected.
   return devNodes;
+}
+
+//==============================================================================
+void IOManager::setupInput(const Settings * settings)
+{
+  // Get the list of predefined inpyut devices.
+  std::vector<std::string> mice = settings->getArray("input.mice");
+  std::vector<std::string> keyboards = settings->getArray("input.keyboards");
+  std::vector<std::string> joysticks = settings->getArray("input.joysticks");
+
+  // Check if we should try to autodetect all the attached mice.
+  if(settings->getValue("detect.input.mice", true))
+  {
+    LUNA_LOG_INFO("Scanning for mice.");
+    mice = scanDevNodes("input", "ID_INPUT_MOUSE");
+  }
+
+  // Check if we should try and autodetect all the attached keyboards.
+  if(settings->getValue("detect.input.keyboards", true))
+  {
+    LUNA_LOG_INFO("Scanning for keyboards.");
+    keyboards = scanDevNodes("input", "ID_INPUT_KEYBOARD");
+  }
+
+  // Check if we should try and autodetect all the attached joysticks.
+  if(settings->getValue("detect.input.joysticks", true))
+  {
+    LUNA_LOG_INFO("Scanning for joysticks.");
+    joysticks = scanDevNodes("input", "ID_INPUT_JOYSTICK");
+  }
+
+  // Create all the mice.
+  for(std::string devNode : mice)
+  {
+    LUNA_LOG_INFO("Creating Mouse: " << devNode);
+
+    try
+    {
+      fMice[devNode] = std::make_unique<Mouse>(devNode);
+    }
+    catch(std::exception & ex)
+    {
+      // It is not a fatal if the input can not be opened, however we should
+      // log it to inform the user.
+      LUNA_LOG_ERROR("Failed to open mouse: " << devNode << ", because: " <<
+                     ex.what());
+    }
+  }
+
+  // Create all the keyboards.
+  for(std::string devNode : keyboards)
+  {
+    LUNA_LOG_INFO("Creating Keyboard: " << devNode);
+
+    try
+    {
+      fKeyboards[devNode] = std::make_unique<Joystick>(devNode);
+    }
+    catch(std::exception & ex)
+    {
+      // It is not a fatal if the input can not be opened, however we should
+      // log it to inform the user.
+      LUNA_LOG_ERROR("Failed to open keyboard: " << devNode << ", because: " <<
+                     ex.what());
+    }
+  }
+
+  // Create all the joysticks.
+  for(std::string devNode : joysticks)
+  {
+    LUNA_LOG_INFO("Creating Joystick: " << devNode);
+    try
+    {
+      fJoysticks[devNode] = std::make_unique<Joystick>(devNode);
+    }
+    catch(std::exception & ex)
+    {
+      // It is not a fatal if the input can not be opened, however we should
+      // log it to inform the user.
+      LUNA_LOG_ERROR("Failed to open joystick: " << devNode << ", because: " <<
+                     ex.what());
+    }
+  }
 }
 
 //==============================================================================

@@ -24,16 +24,16 @@
 #ifndef LUNA_SERVER_INPUT_HPP
 #define LUNA_SERVER_INPUT_HPP
 
-#include "../Common.hpp"
-#include "SessionManager.hpp"
+#include "../../Common.hpp"
+#include "../SessionManager.hpp"
 
-#include "../../../Include/Luna/Common.hpp"
+#include "../../../../Include/Luna/Common.hpp"
 
 namespace Luna
 {
   namespace Server
   {
-    class Input
+    class InputDevice
     {
       // Tracks if the monitoring thread should be running or not.
       std::atomic_bool fRunning;
@@ -50,10 +50,10 @@ namespace Luna
     public:
 
       // Default constructor.
-      Input();
+      InputDevice();
 
       // Destructor.
-      virtual ~Input();
+      virtual ~InputDevice();
 
       // Return true if the input is being monitored, else false.
       bool isRunning() const;

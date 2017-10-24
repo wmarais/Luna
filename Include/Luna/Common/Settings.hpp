@@ -22,15 +22,17 @@ namespace Luna
 
       // Try to read the boolean, if the value does not exist then set it to the
       // passed value and return it.
-      bool getValue(const std::string & path, bool def);
+      bool getValue(const std::string & path, bool def) const;
 
-      int64_t getValue(const std::string & path, int64_t def);
+      int64_t getValue(const std::string & path, int64_t def) const;
 
-      double getValue(const std::string & path, double def);
+      double getValue(const std::string & path, double def) const;
 
 
 
-      std::string getValue(const std::string & path, const std::string & def);
+      std::string getValue(const std::string & path, const std::string & def) const;
+
+      std::vector<std::string> getArray(const std::string & path) const;
 
     };
   }

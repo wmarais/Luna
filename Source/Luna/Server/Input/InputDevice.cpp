@@ -1,31 +1,32 @@
-#include "../../../Include/Luna/Server/Input.hpp"
+#include "../../../../Include/Luna/Server/Input/InputDevice.hpp"
 
 using namespace Luna::Server;
 
 //==============================================================================
-Input::Input() : fRunning(false) {}
+InputDevice::InputDevice() : fRunning(false) {}
 
 //==============================================================================
-Input::~Input() {}
+InputDevice::~InputDevice() {}
 
 //==============================================================================
-bool Input::isRunning() const
+bool InputDevice::isRunning() const
 {
   return fRunning;
 }
 
 //==============================================================================
-void Input::start(std::shared_ptr<SessionManager> sm)
+void InputDevice::start(std::shared_ptr<SessionManager> sm)
 {
   // Set the thread as running.
   fRunning = true;
 
   // Create the monitor thread.
-  fMonitorThread = std::make_unique<std::thread>(&Input::monitor, this, sm);
+  fMonitorThread = std::make_unique<std::thread>(&InputDevice::monitor,
+                                                 this, sm);
 }
 
 //==============================================================================
-void Input::stop()
+void InputDevice::stop()
 {
   // Stop the thread running.
   fRunning = false;
