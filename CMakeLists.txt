@@ -49,25 +49,27 @@ set(LunaClient_SOURCES
 set(LunaServer_HEADERS
   Include/Luna/Server.hpp
 
-  Include/Luna/Server/IOManager.hpp
+
   Include/Luna/Server/Request.hpp
   Include/Luna/Server/Session.hpp
   Include/Luna/Server/SessionManager.hpp
+  Include/Luna/Server/UDEV.hpp
 
   Include/Luna/Server/Input/InputDevice.hpp
+  Include/Luna/Server/Input/InputManager.hpp
   Include/Luna/Server/Input/Joystick.hpp
   Include/Luna/Server/Input/Keyboard.hpp
   Include/Luna/Server/Input/Mouse.hpp
 )
 
 set(LunaServer_SOURCES
-
-  Source/Luna/Server/IOManager.cpp
   Source/Luna/Server/Request.cpp
   Source/Luna/Server/Session.cpp
   Source/Luna/Server/SessionManager.cpp
+  Source/Luna/Server/UDEV.cpp
 
   Source/Luna/Server/Input/InputDevice.cpp
+  Source/Luna/Server/Input/InputManager.cpp
   Source/Luna/Server/Input/Joystick.cpp
   Source/Luna/Server/Input/Keyboard.cpp
   Source/Luna/Server/Input/Mouse.cpp

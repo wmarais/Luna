@@ -56,8 +56,8 @@ void Earth::run(int argc, char * argv[])
 
   // Starting the io manager.
   LUNA_LOG_INFO("Creating the IO Manager.");
-  std::unique_ptr<IOManager> ioman =
-      std::make_unique<IOManager>(fSettings.get());
+  std::unique_ptr<InputManager> ioman =
+      std::make_unique<InputManager>(fSettings.get());
 
 
 

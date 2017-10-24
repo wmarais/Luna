@@ -1,15 +1,16 @@
-#ifndef LUNA_SERVER_IO_MANAGER_HPP
-#define LUNA_SERVER_IO_MANAGER_HPP
+#ifndef LUNA_SERVER_INPUT_MANAGER_HPP
+#define LUNA_SERVER_INPUT_MANAGER_HPP
 
-#include "Input/Mouse.hpp"
-#include "Input/Keyboard.hpp"
-#include "Input/Joystick.hpp"
+#include "Mouse.hpp"
+#include "Keyboard.hpp"
+#include "Joystick.hpp"
+#include "../UDEV.hpp"
 
 namespace Luna
 {
   namespace Server
   {
-    class IOManager
+    class InputManager
     {
       //------------------------------------------------------------------------
       // The udev object.
@@ -79,16 +80,16 @@ namespace Luna
       // Delete the unused constructors as well as the copy and assignment
       // operators.
       //------------------------------------------------------------------------
-      IOManager() = delete;
-      IOManager(const IOManager&) = delete;
-      IOManager & operator = (const IOManager &);
+      InputManager() = delete;
+      InputManager(const InputManager&) = delete;
+      InputManager & operator = (const InputManager &);
 
     public:
       //------------------------------------------------------------------------
       // Initialise the IO Manager and create all the input objects to monitor
       // all the required inputs.
       //------------------------------------------------------------------------
-      IOManager(const Luna::Common::Settings * settings);
+      InputManager(const Luna::Common::Settings * settings);
 
       //------------------------------------------------------------------------
       // Start monitoring the input devices for input events.
@@ -99,8 +100,32 @@ namespace Luna
       // Monitor for hotplugged input devices and screens.
       //------------------------------------------------------------------------
       void startHotplugMonitor(std::shared_ptr<SessionManager> sm);
+
+      void addDevice(std::string devNode);
+
+      void removeDevice(std::string devNode);
+
+      //------------------------------------------------------------------------
+      // Handles devices that have been hotplugged. Hotplugged can be an add or
+      // remove opperation and this function handles both cases.
+      //
+      // In the even of an "add" action:
+      //  -> If the device is allready being monitored, nothing will be done.
+      //  -> If it's not allready being monitored, it will be added and
+      //     monitored.
+      //
+      // In the even of a "remove" action:
+      //
+      //  -> If the devices is not being monitored, nothing will be done.
+      //  -> If it's being monitored, monitoring will stop and the device
+      //     removed.
+      //------------------------------------------------------------------------
+      void hotplugged(const std::string & devNode,
+                      UDEV::InputDeviceTypes devType,
+                      UDEV::DeviceActions action);
+
     };
   }
 }
 
-#endif // LUNA_SERVER_IO_MANAGER_HPP
+#endif // LUNA_SERVER_INPUT_MANAGER_HPP

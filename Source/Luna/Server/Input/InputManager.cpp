@@ -1,10 +1,10 @@
-#include "../../../Include/Luna/Server/IOManager.hpp"
+#include "../../../../Include/Luna/Server/Input/InputManager.hpp"
 
 using namespace Luna::Common;
 using namespace Luna::Server;
 
 //==============================================================================
-IOManager::IOManager(const Settings * settings)
+InputManager::InputManager(const Settings * settings)
   : fUDEV(udev_new(), udev_unref)
 { 
   // Validate the settings parameter.
@@ -13,7 +13,7 @@ IOManager::IOManager(const Settings * settings)
   LUNA_LOG_INFO("Validating udev object.");
   if(!fUDEV)
   {
-    LUNA_THOW_RUNTIME_ERROR("Failed to create UDEV device.");
+    LUNA_THROW_RUNTIME_ERROR("Failed to create UDEV device.");
   }
 
   // Setup the input devices.
@@ -21,7 +21,7 @@ IOManager::IOManager(const Settings * settings)
 }
 
 //==============================================================================
-std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
+std::vector<std::string> InputManager::scanDevNodes(const char * subSystem,
                                                  const char * property)
 {
   // The list of dev nodes.
@@ -34,7 +34,7 @@ std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
   // Check if the enumerator object is created.
   if(!enumerator)
   {
-    LUNA_THOW_RUNTIME_ERROR("Failed to create enumerator object.");
+    LUNA_THROW_RUNTIME_ERROR("Failed to create enumerator object.");
   }
 
   // Check if a particular sub system must be scanned.
@@ -42,7 +42,7 @@ std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
   {
     if(udev_enumerate_add_match_subsystem(enumerator.get(), subSystem) < 0)
     {
-      LUNA_THOW_RUNTIME_ERROR("Failed to set enumerate sub system.");
+      LUNA_THROW_RUNTIME_ERROR("Failed to set enumerate sub system.");
     }
   }
 
@@ -52,14 +52,14 @@ std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
     // Only scan for Mice.
     if(udev_enumerate_add_match_property(enumerator.get(), property, "1") < 0)
     {
-      LUNA_THOW_RUNTIME_ERROR("Failed to set match property.");
+      LUNA_THROW_RUNTIME_ERROR("Failed to set match property.");
     }
   }
 
   // Scan for the devices of interest.
   if(udev_enumerate_scan_devices(enumerator.get()) < 0)
   {
-    LUNA_THOW_RUNTIME_ERROR("Failed to scan for devices.");
+    LUNA_THROW_RUNTIME_ERROR("Failed to scan for devices.");
   }
 
   // The first entry in the list of devices.
@@ -104,7 +104,7 @@ std::vector<std::string> IOManager::scanDevNodes(const char * subSystem,
 }
 
 //==============================================================================
-void IOManager::setupInput(const Settings * settings)
+void InputManager::setupInput(const Settings * settings)
 {
   // Get the list of predefined inpyut devices.
   std::vector<std::string> mice = settings->getArray("input.mice");
@@ -187,7 +187,7 @@ void IOManager::setupInput(const Settings * settings)
 }
 
 //==============================================================================
-void IOManager::startInputMonitor(std::shared_ptr<SessionManager> sm)
+void InputManager::startInputMonitor(std::shared_ptr<SessionManager> sm)
 {
   // Start monitoring the mice.
   for(auto mouse = fMice.begin(); mouse != fMice.end(); mouse++)
@@ -207,7 +207,34 @@ void IOManager::startInputMonitor(std::shared_ptr<SessionManager> sm)
 }
 
 //==============================================================================
-void IOManager::startHotplugMonitor(std::shared_ptr<SessionManager> sm)
+void InputManager::startHotplugMonitor(std::shared_ptr<SessionManager> sm)
 {
 
 }
+
+//==============================================================================
+void InputManager::addDevice(std::string devNode)
+{
+
+}
+
+//==============================================================================
+void InputManager::removeDevice(std::string devNode)
+{
+
+}
+
+//==============================================================================
+void InputManager::hotplugged(const std::string & devNode,
+                              UDEV::InputDeviceTypes devType,
+                              UDEV::DeviceActions action)
+{
+
+}
+
+
+
+
+
+
+

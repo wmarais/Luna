@@ -3,7 +3,7 @@
 
 #include "GeneralHeaders.hpp"
 
-#define LUNA_THOW_EXCEPTION(msg) \
+#define LUNA_THROW_EXCEPTION(msg) \
 {\
   std::stringstream ss;\
   ss << __FILE__ << " | " << __FUNCTION__ << "|" << __LINE__ << " | " << msg; \
@@ -11,7 +11,7 @@
 }
 
 
-#define LUNA_THOW_RUNTIME_ERROR(msg) \
+#define LUNA_THROW_RUNTIME_ERROR(msg) \
 {\
   std::stringstream ss;\
   ss << __FILE__ << " | " << __FUNCTION__ << "|" << __LINE__ << " | " << msg; \

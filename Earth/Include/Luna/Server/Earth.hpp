@@ -12,7 +12,7 @@ namespace Luna
     {
       std::unique_ptr<Luna::Common::Settings> fSettings;
 
-      std::unique_ptr<IOManager> fIOManager;
+      std::unique_ptr<InputManager> fIOManager;
 
 
       static const std::string kLogFilePath;
