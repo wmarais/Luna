@@ -27,6 +27,7 @@ namespace Luna
   namespace Server
   {
     class InputManager;
+    class DisplayManager;
 
     class UDEV
     {
@@ -73,7 +74,8 @@ namespace Luna
       //------------------------------------------------------------------------
       // Start monitoring for hot plugged devices.
       //------------------------------------------------------------------------
-      void startMonitor(std::shared_ptr<InputManager> im);
+      void startMonitor(std::shared_ptr<InputManager> im,
+                        std::shared_ptr<DisplayManager> dm);
 
       //------------------------------------------------------------------------
       // Stop monitoring for hot plugged devices.
@@ -81,9 +83,10 @@ namespace Luna
       void stopMonitor();
 
       //------------------------------------------------------------------------
-      // Scan for all the attached input devices.
+      // Scan for all the attached input devices and add the detected ones to
+      // the input manager.
       //------------------------------------------------------------------------
-      std::vector<std::tuple<std::string, InputDeviceTypes>> scanInputDevices();
+      void scan(InputManager * im, DisplayManager * dm);
 
     private:
 
@@ -128,7 +131,8 @@ namespace Luna
       //------------------------------------------------------------------------
       // The entry point for the monitor thread.
       //------------------------------------------------------------------------
-      void monitor(std::shared_ptr<InputManager> im);
+      void monitor(std::shared_ptr<InputManager> im,
+                   std::shared_ptr<DisplayManager> dm);
 
       //------------------------------------------------------------------------
       // Determine the input type that was hot plugged.
@@ -144,6 +148,12 @@ namespace Luna
       // Determine if the device was plugged in or unplugged.
       //------------------------------------------------------------------------
       DeviceActions getDeviceAction(struct udev_device * dev) const;
+
+      //------------------------------------------------------------------------
+      // Scan for particular devices.
+      //------------------------------------------------------------------------
+      std::vector<std::string> scanDevices(const char * subSystem,
+                                           const char * property);
     };
   }
 }

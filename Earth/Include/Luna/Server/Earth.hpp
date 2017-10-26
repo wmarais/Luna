@@ -10,6 +10,12 @@ namespace Luna
   {
     class Earth
     {
+      std::shared_ptr<Luna::Server::InputManager> fInputManager;
+      std::shared_ptr<Luna::Server::DisplayManager> fDisplayManager;
+
+      std::unique_ptr<Luna::Server::UDEV> fUDEV;
+
+
       std::unique_ptr<Luna::Common::Settings> fSettings;
 
       std::unique_ptr<InputManager> fIOManager;

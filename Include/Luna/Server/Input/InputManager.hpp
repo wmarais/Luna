@@ -15,7 +15,7 @@ namespace Luna
       //------------------------------------------------------------------------
       // The udev object.
       //------------------------------------------------------------------------
-      std::unique_ptr<struct udev, decltype(&udev_unref)> fUDEV;
+      /*std::unique_ptr<struct udev, decltype(&udev_unref)> fUDEV;*/
 
       //------------------------------------------------------------------------
       // The mice that are monitored. The key is a string to the dev node for

@@ -5,9 +5,9 @@ using namespace Luna::Server;
 
 //==============================================================================
 InputManager::InputManager(const Settings * settings)
-  : fUDEV(udev_new(), udev_unref)
+  /*: fUDEV(udev_new(), udev_unref)*/
 { 
-  // Validate the settings parameter.
+  /*// Validate the settings parameter.
   assert(settings && "Settings object is null.");
 
   LUNA_LOG_INFO("Validating udev object.");
@@ -17,7 +17,7 @@ InputManager::InputManager(const Settings * settings)
   }
 
   // Setup the input devices.
-  setupInput(settings);
+  setupInput(settings);*/
 }
 
 //==============================================================================
@@ -27,7 +27,7 @@ std::vector<std::string> InputManager::scanDevNodes(const char * subSystem,
   // The list of dev nodes.
   std::vector<std::string> devNodes;
 
-  // Create a list of input devices.
+  /*// Create a list of input devices.
   std::unique_ptr<struct udev_enumerate, decltype(&udev_enumerate_unref)>
       enumerator(udev_enumerate_new(fUDEV.get()), udev_enumerate_unref);
 
@@ -97,7 +97,7 @@ std::vector<std::string> InputManager::scanDevNodes(const char * subSystem,
         }
       }
     }
-  }
+  }*/
 
   // Return the list of dev nodes detected.
   return devNodes;
@@ -229,7 +229,7 @@ void InputManager::hotplugged(const std::string & devNode,
                               UDEV::InputDeviceTypes devType,
                               UDEV::DeviceActions action)
 {
-
+  LUNA_LOG_INFO("Managing device: " << devNode);
 }
 
 

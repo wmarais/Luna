@@ -1,5 +1,4 @@
-#include "../../../Include/Luna/Server/UDEV.hpp"
-#include "../../../Include/Luna/Server/Input/InputManager.hpp"
+#include "../../../Include/Luna/Server.hpp"
 
 using namespace Luna::Common;
 using namespace Luna::Server;
@@ -42,7 +41,8 @@ UDEV::~UDEV()
 }
 
 //==============================================================================
-void UDEV::startMonitor(std::shared_ptr<InputManager> im)
+void UDEV::startMonitor(std::shared_ptr<InputManager> im,
+                        std::shared_ptr<DisplayManager> dm)
 {
   // Check if a monitoring thread was created.
   if(fMonitorThread)
@@ -63,7 +63,7 @@ void UDEV::startMonitor(std::shared_ptr<InputManager> im)
 
   // Start the monitor.
   fMonitorThread = std::make_unique<std::thread>(&UDEV::monitor, this,
-                                                 im);
+                                                 im, dm);
 }
 
 //==============================================================================
@@ -81,10 +81,111 @@ void UDEV::stopMonitor()
 }
 
 //==============================================================================
-std::vector<std::tuple<std::string, UDEV::InputDeviceTypes>>
-  UDEV::scanInputDevices()
+void UDEV::scan(InputManager *im, Luna::Server::DisplayManager *dm)
 {
+  // The udev object.
+  std::unique_ptr<struct udev, decltype(&udev_unref)>
+      udev(udev_new(), udev_unref);
 
+  // Check if the udev object is valid.
+  if(!udev)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to create udev object.");
+  }
+
+  // Create a list of input devices.
+  std::unique_ptr<struct udev_enumerate, decltype(&udev_enumerate_unref)>
+      enumerator(udev_enumerate_new(udev.get()), udev_enumerate_unref);
+
+  // Check if the enumerate object is created.
+  if(!enumerator)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to create enumerate object.");
+  }
+
+  // Add a filter for the input subsystem.
+  if(udev_enumerate_add_match_subsystem(enumerator.get(),
+      kSubSystemNames[kInputSubSystem]) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to set subsystem match for " <<
+                             kSubSystemNames[kInputSubSystem] << ".");
+  }
+
+  // Add a filter for the drm subsystem.
+  if(udev_enumerate_add_match_subsystem(enumerator.get(),
+      kSubSystemNames[kDRMSubSystem]) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to set subsystem match for " <<
+                             kSubSystemNames[kDRMSubSystem] << ".");
+  }
+
+  // Scan for the devices of interest.
+  if(udev_enumerate_scan_devices(enumerator.get()) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to scan for devices.");
+  }
+
+  // The first entry in the list of devices.
+  struct udev_list_entry * firstDevListEntry =
+      udev_enumerate_get_list_entry(enumerator.get());
+
+  // Check there is alteast a first entry.
+  if(firstDevListEntry)
+  {
+    // The current device.
+    struct udev_list_entry * curDevListEntry = nullptr;
+
+    // Iterate through all the devices.
+    udev_list_entry_foreach(curDevListEntry, firstDevListEntry)
+    {
+
+      // Get the filename of the /sys entry for the device and create a
+      // udev_device object (dev) representing it.
+      const char * path = udev_list_entry_get_name(curDevListEntry);
+
+      // Check if the path is valid.
+      if(path)
+      {
+        // Get a handle to the device.
+        std::unique_ptr<struct udev_device, decltype(&udev_device_unref)>
+            device(udev_device_new_from_syspath(udev.get(), path),
+                   udev_device_unref);
+
+        // Get the dev node.
+        std::string devNode = toString(udev_device_get_devnode(device.get()));
+
+        // Make sure the dev node is valid.
+        if(!devNode.empty())
+        {
+          // Check the sub system.
+          SubSystems subSys = getSubSystem(device.get());
+
+          // Check where to add the input device.
+          switch(subSys)
+          {
+            // It is an input device.
+            case kInputSubSystem:
+            {
+              // Get the input device type.
+              InputDeviceTypes devType = getInputType(device.get());
+
+              // Connect the device.
+              im->hotplugged(devNode, devType, kAddDevice);
+            }
+            break;
+
+            // It is a display device.
+            case kDRMSubSystem:
+            {
+              // Tell the display manager to manage the device.
+              dm->manageDevice(devNode, kAddDevice);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
 }
 
 //==============================================================================
@@ -159,7 +260,8 @@ UDEV::DeviceActions UDEV::getDeviceAction(struct udev_device * dev) const
 }
 
 //==============================================================================
-void UDEV::monitor(std::shared_ptr<InputManager> im)
+void UDEV::monitor(std::shared_ptr<InputManager> im,
+                   std::shared_ptr<DisplayManager> dm)
 {
   try
   {
@@ -248,29 +350,34 @@ void UDEV::monitor(std::shared_ptr<InputManager> im)
           std::string devNode =
               toString(udev_device_get_devnode(device.get()));
 
-          // Get the hotplug action.
-          DeviceActions devAction = getDeviceAction(device.get());
-
-          // Check the sub system.
-          switch(getSubSystem(device.get()))
+          // Check if the dev node is valid.
+          if(!devNode.empty())
           {
-            // A device was added or removed.
-            case kInputSubSystem:
+            // Get the hotplug action.
+            DeviceActions devAction = getDeviceAction(device.get());
+
+            // Check the sub system.
+            switch(getSubSystem(device.get()))
             {
-              // Get the device type.
-              InputDeviceTypes devType = getInputType(device.get());
+              // A device was added or removed.
+              case kInputSubSystem:
+              {
+                // Get the device type.
+                InputDeviceTypes devType = getInputType(device.get());
 
-              // Input device was hot plugged.
-              im->hotplugged(devNode, devType, devAction);
+                // Input device was hot plugged.
+                im->hotplugged(devNode, devType, devAction);
+              }
+              break;
+
+              // A screen was added in or removed.
+              case kDRMSubSystem:
+              {
+              // Manage the display device.
+                dm->manageDevice(devNode, devAction);
+              }
+              break;
             }
-            break;
-
-            // A screen was added in or removed.
-            case kDRMSubSystem:
-            {
-
-            }
-            break;
           }
         }
       }
@@ -298,3 +405,4 @@ void UDEV::monitor(std::shared_ptr<InputManager> im)
     LUNA_LOG_ERROR("Hotplug monitor thread died for unknown reasons.");
   }
 }
+

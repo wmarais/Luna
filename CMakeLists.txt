@@ -55,6 +55,8 @@ set(LunaServer_HEADERS
   Include/Luna/Server/SessionManager.hpp
   Include/Luna/Server/UDEV.hpp
 
+  Include/Luna/Server/Display/DisplayManager.hpp
+
   Include/Luna/Server/Input/InputDevice.hpp
   Include/Luna/Server/Input/InputManager.hpp
   Include/Luna/Server/Input/Joystick.hpp
@@ -67,6 +69,8 @@ set(LunaServer_SOURCES
   Source/Luna/Server/Session.cpp
   Source/Luna/Server/SessionManager.cpp
   Source/Luna/Server/UDEV.cpp
+
+  Source/Luna/Server/Display/DisplayManager.cpp
 
   Source/Luna/Server/Input/InputDevice.cpp
   Source/Luna/Server/Input/InputManager.cpp

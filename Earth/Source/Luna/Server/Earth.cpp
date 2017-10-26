@@ -46,18 +46,43 @@ void Earth::run(int argc, char * argv[])
   LUNA_LOG_INFO("Parsing settings: " << kSettingFilePath);
   fSettings = std::make_unique<Settings>(kSettingFilePath);
 
+
+  // Create the input manager.
+  fInputManager = std::make_shared<InputManager>(fSettings.get());
+
+  // Create the display manager.
+  fDisplayManager = std::make_shared<DisplayManager>();
+
+  // Create the udev interface.
+  fUDEV = std::make_unique<UDEV>();
+
+  // Check if the hotplug monitor should be running.
+  if(fSettings->getValue("hotplug", true))
+  {
+    // Start monitoring for hotplug events on UDEV.
+    fUDEV->startMonitor(fInputManager, fDisplayManager);
+  }
+
+  // Scan for the devices allready plugged in.
+  fUDEV->scan(fInputManager.get(), fDisplayManager.get());
+
+
   /*// Create the session manager.
   LUNA_LOG_INFO("Creating the session manager.");
   std::shared_ptr<SessionManager> sm = std::make_shared<SessionManager>();
 
   // Starting the session manager.
   LUNA_LOG_INFO("Starting the session manager.");
-  sm->start();*/
+  sm->start();
 
   // Starting the io manager.
   LUNA_LOG_INFO("Creating the IO Manager.");
   std::unique_ptr<InputManager> ioman =
-      std::make_unique<InputManager>(fSettings.get());
+      std::make_unique<InputManager>(fSettings.get());*/
+
+
+  // Create the display manager.
+
 
 
 

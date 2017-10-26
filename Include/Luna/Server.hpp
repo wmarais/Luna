@@ -2,6 +2,8 @@
 #define LUNA_SERVER_HPP
 
 
+#include "Server/Display/DisplayManager.hpp"
+
 //------------------------------------------------------------------------------
 // INPUT - All the headers for for input management.
 //------------------------------------------------------------------------------
@@ -13,5 +15,7 @@
 
 
 #include "Server/SessionManager.hpp"
+
+#include "Server/UDEV.hpp"
 
 #endif // LUNA_SERVER_HPP
