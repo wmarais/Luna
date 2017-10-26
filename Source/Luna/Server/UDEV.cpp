@@ -20,7 +20,8 @@ const char * UDEV::InputDeviceTypeProps[UDEV::kInputDevicesCount] =
 const char * UDEV::kDeviceActionStrs[UDEV::kDeviceActionsCount]
 {
   "add",
-  "remove"
+  "remove",
+  "change"
 };
 
 //==============================================================================

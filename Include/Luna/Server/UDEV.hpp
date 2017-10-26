@@ -56,6 +56,7 @@ namespace Luna
       {
         kAddDevice = 0,
         kRemoveDevice,
+        kChangeDevice,
         kDeviceActionsCount,
         kUnknownDeviceAction
       };
