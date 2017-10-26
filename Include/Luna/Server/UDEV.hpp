@@ -154,6 +154,12 @@ namespace Luna
       //------------------------------------------------------------------------
       std::vector<std::string> scanDevices(const char * subSystem,
                                            const char * property);
+
+      //------------------------------------------------------------------------
+      // Process any detected devices.
+      //------------------------------------------------------------------------
+      void processDevice(struct udev_device * dev, InputManager * im,
+                         DisplayManager * dm, DeviceActions action);
     };
   }
 }

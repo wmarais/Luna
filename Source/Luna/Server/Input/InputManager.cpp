@@ -229,7 +229,7 @@ void InputManager::hotplugged(const std::string & devNode,
                               UDEV::InputDeviceTypes devType,
                               UDEV::DeviceActions action)
 {
-  LUNA_LOG_INFO("Managing device: " << devNode);
+  //LUNA_LOG_INFO("Managing device: " << devNode);
 }
 
 

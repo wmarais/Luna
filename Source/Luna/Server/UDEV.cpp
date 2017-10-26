@@ -81,6 +81,77 @@ void UDEV::stopMonitor()
 }
 
 //==============================================================================
+UDEV::InputDeviceTypes UDEV::getInputType(struct udev_device * dev) const
+{
+  // The input device that was detected.
+  InputDeviceTypes inputDevice = kUnknownInputDevice;
+
+  // Loop through all the device type properties.
+  for(int i = 0; inputDevice == kUnknownInputDevice && i < kInputDevicesCount;
+      i++)
+  {
+    // Get the property value.
+    std::string value =
+        toString(udev_device_get_property_value(dev, InputDeviceTypeProps[i]));
+
+    // Check if the property is set.
+    if(value == "1")
+    {
+      inputDevice = static_cast<InputDeviceTypes>(i);
+    }
+  }
+
+  // Return the input device.
+  return inputDevice;
+}
+
+//==============================================================================
+UDEV::SubSystems UDEV::getSubSystem(struct udev_device * dev) const
+{
+  // The sub system that will be returned.
+  SubSystems subSys = kUnknownSubSystem;
+
+  // Get the sub system name.
+  std::string subSysName = toString(udev_device_get_subsystem(dev));
+
+  // Check which sub systems.
+  for(int i = 0; subSys == kUnknownSubSystem && i < kSubSystemsCount; i++)
+  {
+    // Check if the sub system name matches.
+    if(subSysName == kSubSystemNames[i])
+    {
+      subSys = static_cast<SubSystems>(i);
+    }
+  }
+
+  // Return the sub system.
+  return subSys;
+}
+
+//==============================================================================
+UDEV::DeviceActions UDEV::getDeviceAction(struct udev_device * dev) const
+{
+  // The device action that will be returned.
+  DeviceActions action = kUnknownDeviceAction;
+
+  // Get the action.
+  std::string actionStr = toString(udev_device_get_action(dev));
+
+  for(int i = 0; action == kUnknownDeviceAction && i < kDeviceActionsCount; i++)
+  {
+    // Check if the action matches.
+    if(actionStr == kDeviceActionStrs[i])
+    {
+      // Set the corresponding action.
+      action = static_cast<DeviceActions>(i);
+    }
+  }
+
+  // Return the action.
+  return action;
+}
+
+//==============================================================================
 void UDEV::scan(InputManager *im, Luna::Server::DisplayManager *dm)
 {
   // The udev object.
@@ -151,112 +222,15 @@ void UDEV::scan(InputManager *im, Luna::Server::DisplayManager *dm)
             device(udev_device_new_from_syspath(udev.get(), path),
                    udev_device_unref);
 
-        // Get the dev node.
-        std::string devNode = toString(udev_device_get_devnode(device.get()));
-
-        // Make sure the dev node is valid.
-        if(!devNode.empty())
+        // Validate the device.
+        if(device)
         {
-          // Check the sub system.
-          SubSystems subSys = getSubSystem(device.get());
-
-          // Check where to add the input device.
-          switch(subSys)
-          {
-            // It is an input device.
-            case kInputSubSystem:
-            {
-              // Get the input device type.
-              InputDeviceTypes devType = getInputType(device.get());
-
-              // Connect the device.
-              im->hotplugged(devNode, devType, kAddDevice);
-            }
-            break;
-
-            // It is a display device.
-            case kDRMSubSystem:
-            {
-              // Tell the display manager to manage the device.
-              dm->manageDevice(devNode, kAddDevice);
-            }
-            break;
-          }
+          // Process the device.
+          processDevice(device.get(), im, dm, kAddDevice);
         }
       }
     }
   }
-}
-
-//==============================================================================
-UDEV::InputDeviceTypes UDEV::getInputType(struct udev_device * dev) const
-{
-  // The input device that was detected.
-  InputDeviceTypes inputDevice = kUnknownInputDevice;
-
-  // Loop through all the device type properties.
-  for(int i = 0; inputDevice == kUnknownInputDevice && i < kInputDevicesCount;
-      i++)
-  {
-    // Get the property value.
-    std::string value =
-        toString(udev_device_get_property_value(dev, InputDeviceTypeProps[i]));
-
-    // Check if the property is set.
-    if(value == "1")
-    {
-      inputDevice = static_cast<InputDeviceTypes>(i);
-    }
-  }
-
-  // Return the input device.
-  return inputDevice;
-}
-
-//==============================================================================
-UDEV::SubSystems UDEV::getSubSystem(struct udev_device * dev) const
-{
-  // The sub system that will be returned.
-  SubSystems subSys = kUnknownSubSystem;
-
-  // Get the sub system name.
-  std::string subSysName = toString(udev_device_get_subsystem(dev));
-
-  // Check which sub systems.
-  for(int i = 0; subSys == kUnknownSubSystem && i < kSubSystemsCount; i++)
-  {
-    // Check if the sub system name matches.
-    if(subSysName == kSubSystemNames[i])
-    {
-      subSys = static_cast<SubSystems>(i);
-    }
-  }
-
-  // Return the sub system.
-  return subSys;
-}
-
-//==============================================================================
-UDEV::DeviceActions UDEV::getDeviceAction(struct udev_device * dev) const
-{
-  // The device action that will be returned.
-  DeviceActions action = kUnknownDeviceAction;
-
-  // Get the action.
-  std::string actionStr = toString(udev_device_get_action(dev));
-
-  for(int i = 0; action == kUnknownDeviceAction && i < kDeviceActionsCount; i++)
-  {
-    // Check if the action matches.
-    if(actionStr == kDeviceActionStrs[i])
-    {
-      // Set the corresponding action.
-      action = static_cast<DeviceActions>(i);
-    }
-  }
-
-  // Return the action.
-  return action;
 }
 
 //==============================================================================
@@ -346,39 +320,11 @@ void UDEV::monitor(std::shared_ptr<InputManager> im,
         // Make sure it is valid.
         if(device)
         {
-          // Get the devNode path.
-          std::string devNode =
-              toString(udev_device_get_devnode(device.get()));
+          // Get the device action.
+          DeviceActions action = getDeviceAction(device.get());
 
-          // Check if the dev node is valid.
-          if(!devNode.empty())
-          {
-            // Get the hotplug action.
-            DeviceActions devAction = getDeviceAction(device.get());
-
-            // Check the sub system.
-            switch(getSubSystem(device.get()))
-            {
-              // A device was added or removed.
-              case kInputSubSystem:
-              {
-                // Get the device type.
-                InputDeviceTypes devType = getInputType(device.get());
-
-                // Input device was hot plugged.
-                im->hotplugged(devNode, devType, devAction);
-              }
-              break;
-
-              // A screen was added in or removed.
-              case kDRMSubSystem:
-              {
-              // Manage the display device.
-                dm->manageDevice(devNode, devAction);
-              }
-              break;
-            }
-          }
+          // Process the device.
+          processDevice(device.get(), im.get(), dm.get(), action);
         }
       }
 
@@ -403,6 +349,56 @@ void UDEV::monitor(std::shared_ptr<InputManager> im,
     fMonitoring = false;
 
     LUNA_LOG_ERROR("Hotplug monitor thread died for unknown reasons.");
+  }
+}
+
+//==============================================================================
+void UDEV::processDevice(struct udev_device * dev, InputManager * im,
+                         DisplayManager * dm, DeviceActions action)
+{
+  // Get the dev node.
+  std::string devNode = toString(udev_device_get_devnode(dev));
+
+  // Make sure the dev node is valid.
+  if(!devNode.empty())
+  {
+    // Check the sub system.
+    SubSystems subSys = getSubSystem(dev);
+
+    // Check where to add the input device.
+    switch(subSys)
+    {
+      // It is an input device.
+      case kInputSubSystem:
+      {
+        // Get the input device type.
+        InputDeviceTypes devType = getInputType(dev);
+
+        // Check if it's a know device type.
+        if(devType != kUnknownInputDevice)
+        {
+          LUNA_LOG_INFO("Scan detected (" << kSubSystemNames[subSys] << "): " <<
+                        devNode << " (" << InputDeviceTypeProps[devType] <<
+                        ") with action: " << kDeviceActionStrs[action] << ".");
+
+          // Connect the device.
+          im->hotplugged(devNode, devType, action);
+        }
+      }
+      break;
+
+      // It is a display device.
+      case kDRMSubSystem:
+      {
+        LUNA_LOG_INFO("Scan detected (" << kSubSystemNames[subSys] << "): " <<
+                      devNode << " with action: " << kDeviceActionStrs[action]
+                      << ".");
+
+        // Tell the display manager to manage the device.
+        dm->manageDevice(devNode, action);
+      }
+      break;
+    }
   }
 }
 
