@@ -153,7 +153,7 @@ UDEV::DeviceActions UDEV::getDeviceAction(struct udev_device * dev) const
 }
 
 //==============================================================================
-void UDEV::scan(InputManager *im, Luna::Server::DisplayManager *dm)
+void UDEV::scan(InputManager * im, DisplayManager * dm)
 {
   // The udev object.
   std::unique_ptr<struct udev, decltype(&udev_unref)>
@@ -396,7 +396,7 @@ void UDEV::processDevice(struct udev_device * dev, InputManager * im,
                       << ".");
 
         // Tell the display manager to manage the device.
-        dm->manageDevice(devNode, action);
+        dm->changed(devNode, action);
       }
       break;
     }

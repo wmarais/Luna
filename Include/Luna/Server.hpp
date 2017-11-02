@@ -3,6 +3,7 @@
 
 
 #include "Server/Display/DisplayManager.hpp"
+#include "Server/Display/VideoCard.hpp"
 
 //------------------------------------------------------------------------------
 // INPUT - All the headers for for input management.

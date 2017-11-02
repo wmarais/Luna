@@ -1,13 +1,14 @@
 cmake_minimum_required (VERSION 3.7)
 project (Luna)
 
-
-
 find_library(Luna_LIBCONFIGPP "config++")
 find_library(Luna_LIBUUID "uuid")
 find_library(Luna_LIBUDEV "udev")
+find_library(Luna_LIBDRM "drm")
 
 set(Luna_LIBPTHREAD pthread)
+
+include_directories("/usr/include/libdrm")
 
 message("Luna_LIBUUID = ${Luna_LIBUUID}\n")
 
@@ -18,6 +19,7 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/Exception.hpp
   Include/Luna/Common/Log.hpp
   Include/Luna/Common/GeneralHeaders.hpp
+  Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
   Include/Luna/Common/SystemHeaders.hpp
 )
@@ -55,7 +57,9 @@ set(LunaServer_HEADERS
   Include/Luna/Server/SessionManager.hpp
   Include/Luna/Server/UDEV.hpp
 
+  Include/Luna/Server/Display/Display.hpp
   Include/Luna/Server/Display/DisplayManager.hpp
+  Include/Luna/Server/Display/VideoCard.hpp
 
   Include/Luna/Server/Input/InputDevice.hpp
   Include/Luna/Server/Input/InputManager.hpp
@@ -70,7 +74,9 @@ set(LunaServer_SOURCES
   Source/Luna/Server/SessionManager.cpp
   Source/Luna/Server/UDEV.cpp
 
+  Source/Luna/Server/Display/Display.cpp
   Source/Luna/Server/Display/DisplayManager.cpp
+  Source/Luna/Server/Display/VideoCard.cpp
 
   Source/Luna/Server/Input/InputDevice.cpp
   Source/Luna/Server/Input/InputManager.cpp
@@ -103,7 +109,7 @@ set(LunaEarth_SOURCES
 
 add_executable(LunaEarth ${LunaEarth_HEADERS} ${LunaEarth_SOURCES})
 target_link_libraries(LunaEarth LunaCommon LunaServer ${Luna_LIBCONFIGPP}
-    ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV})
+    ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 
 

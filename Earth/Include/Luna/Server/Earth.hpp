@@ -16,7 +16,7 @@ namespace Luna
       std::unique_ptr<Luna::Server::UDEV> fUDEV;
 
 
-      std::unique_ptr<Luna::Common::Settings> fSettings;
+      std::shared_ptr<Luna::Common::Settings> fSettings;
 
       std::unique_ptr<InputManager> fIOManager;
 

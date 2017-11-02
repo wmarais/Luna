@@ -25,6 +25,22 @@ namespace Luna
     {
       return std::string(str ? str : "");
     }
+
+    template <typename R, typename D> class NonPtrCResource
+    {
+      R fResource;
+      D fDeleter;
+      bool fPassTest;
+    public:
+      NonPtrCResource(const R & resource, bool passTest, const D & deleter) :
+        fResource(resource), fDeleter(deleter), fPassTest(passTest) {}
+
+      ~NonPtrCResource()
+      {
+        fDeleter(fResource);
+      }
+
+    };
   }
 }
 

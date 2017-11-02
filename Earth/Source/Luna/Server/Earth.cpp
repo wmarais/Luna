@@ -44,14 +44,14 @@ void Earth::run(int argc, char * argv[])
 
   // Parse the settings file.
   LUNA_LOG_INFO("Parsing settings: " << kSettingFilePath);
-  fSettings = std::make_unique<Settings>(kSettingFilePath);
+  fSettings = std::make_shared<Settings>(kSettingFilePath);
 
 
   // Create the input manager.
   fInputManager = std::make_shared<InputManager>(fSettings.get());
 
   // Create the display manager.
-  fDisplayManager = std::make_shared<DisplayManager>();
+  fDisplayManager = std::make_shared<DisplayManager>(fSettings);
 
   // Create the udev interface.
   fUDEV = std::make_unique<UDEV>();
