@@ -53,3 +53,19 @@ inspection, use the following command:
 ```
 valgrind --leak-check=yes --leak-check=full --show-leak-kinds=all ./LunaEarth
 ```
+
+## GProf (Code Profiling)
+
+Version 6 of GCC has a bug that stops GProf from working. Though the debug
+configuraing is compiled with GProf support, it will only work with earlier
+version of GCC. Should only need to first execute the application once:
+
+```
+./LunaEarth
+```
+
+Then execute GProf:
+
+```
+gprof LunaEarth gmon.out > analysis.txt
+```
