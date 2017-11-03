@@ -39,9 +39,6 @@ void Earth::stopInput()
 //==============================================================================
 void Earth::run(int argc, char * argv[])
 {
-  // Create the log.
-  Log::create();
-
   // Parse the settings file.
   LUNA_LOG_INFO("Parsing settings: " << kSettingFilePath);
   fSettings = std::make_shared<Settings>(kSettingFilePath);
@@ -82,12 +79,6 @@ void Earth::run(int argc, char * argv[])
 
 
   // Create the display manager.
-
-
-
-
-  // Destroy the log.
-  Log::destroy();
 }
 
 /*

@@ -7,7 +7,7 @@
 #define LUNA_LOG_WARN(msg) std::cout << msg << std::endl
 #define LUNA_LOG_ERROR(msg) std::cout << msg << std::endl
 #define LUNA_LOG_FATAL_ERROR(msg) std::cout << msg << std::endl
-#define LUNA_LOG_EXCEPTION(msg, ex) std::cout << msg << " | " << ex.what()
+#define LUNA_LOG_EXCEPTION(msg, ex) std::cout << msg << " | " << ex.what() << std::endl
 
 namespace Luna
 {

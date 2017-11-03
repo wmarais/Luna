@@ -399,6 +399,11 @@ void UDEV::processDevice(struct udev_device * dev, InputManager * im,
         dm->changed(devNode, action);
       }
       break;
+
+      // Unused case braches.
+      case kSubSystemsCount:
+      case kUnknownSubSystem:
+      default: break;
     }
   }
 }

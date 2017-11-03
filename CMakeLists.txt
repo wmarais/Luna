@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.7)
 project (Luna)
 
+################################################################################
+# Required Libraries
+################################################################################
 find_library(Luna_LIBCONFIGPP "config++")
 find_library(Luna_LIBUUID "uuid")
 find_library(Luna_LIBUDEV "udev")
@@ -8,10 +11,42 @@ find_library(Luna_LIBDRM "drm")
 
 set(Luna_LIBPTHREAD pthread)
 
+
 include_directories("/usr/include/libdrm")
 
-message("Luna_LIBUUID = ${Luna_LIBUUID}\n")
+################################################################################
+# GCC Specific Compiler Flags
+################################################################################
+# Code Coverage Checking
+set(GCC_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+set(GCC_LINK_FLAGS    "-lgcov")
 
+# Enable exception handling.
+set(GCC_COMPILE_FLAGS "${GCC_COMPILE_FLAGS} -fexceptions")
+
+# Enable stack protection.
+set(GCC_COMPILE_FLAGS "${GCC_COMPILE_FLAGS} -fstack-protector")
+
+# Imroved warning and code checking.
+set(GCC_COMPILE_FLAGS "${GCC_COMPILE_FLAGS} \
+    -Wall -Wextra -Wzero-as-null-pointer-constant -Wuseless-cast \
+    -Wswitch-default -Wswitch-enum -Wunused-parameter -Wunused-result" )
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # Set the compile flags that apply to both Debug and Release builds.
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}")
+
+  # Enable gprof and valgrind for debug builds. Basically ensure that debug
+  # symbols are enabled, profile is enabled and no code optimisation is
+  # performed. Note there is a bug in GCC V6 that is causing gprof not to work.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -p -pg -O0")
+
+endif()
+
+################################################################################
+# Common code shared between client and server.
+################################################################################
 set(LunaCommon_HEADERS
   Include/Luna/Common.hpp
 
@@ -30,10 +65,11 @@ set(LunaCommon_SOURCES
   Source/Luna/Common/Settings.cpp
 )
 
-add_library(LunaCommon ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
+add_library(LunaCommon STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
 
-
-
+################################################################################
+# Client Specific Code
+################################################################################
 set(LunaClient_HEADERS
   Include/Luna/Client.hpp
   Include/Luna/Client/Event.hpp
@@ -44,10 +80,11 @@ set(LunaClient_SOURCES
 
 )
 
+#add_library(LunaClient STATIC ${LunaClient_HEADERS} ${LunaClient_SOURCES})
 
-#add_library(LunaClient ${LunaClient_HEADERS} ${LunaClient_SOURCES})
-
-
+################################################################################
+# Server Specific Code
+################################################################################
 set(LunaServer_HEADERS
   Include/Luna/Server.hpp
 
@@ -85,9 +122,12 @@ set(LunaServer_SOURCES
   Source/Luna/Server/Input/Mouse.cpp
 )
 
-add_library(LunaServer ${LunaServer_HEADERS} ${LunaServer_SOURCES})
+add_library(LunaServer STATIC ${LunaServer_HEADERS} ${LunaServer_SOURCES})
 
 
+################################################################################
+# Session Client
+################################################################################
 set(LunaMoon_HEADERS
 
 )
@@ -98,6 +138,9 @@ set(LunaMoon_SOURCES
 
 add_executable(LunaMoon ${LunaMoon_HEADERS} ${LunaMoon_SOURCES})
 
+################################################################################
+# Session Server
+################################################################################
 set(LunaEarth_HEADERS
   Earth/Include/Luna/Server/Earth.hpp
 )

@@ -23,7 +23,7 @@ VideoCard::VideoCard(const std::string & devNode) : fFD(-1)
   if (drmGetCap(fFD, DRM_CAP_DUMB_BUFFER, &hasDumbBuffs) < 0 ||
       hasDumbBuffs == 0)
   {
-    LUNA_LOG_ERROR("Device does not support dumb buffers!");
+    LUNA_THROW_RUNTIME_ERROR("Device does not support dumb buffers!");
   }
 }
 
@@ -106,9 +106,18 @@ void VideoCard::configure(const Settings * settings)
     }
 
     // Create the display.
-    std::unique_ptr<Display> display = std::make_unique<Display>(connector);
+    std::unique_ptr<Display> display = std::make_unique<Display>();
+
+    // COnfigure the display.
+    display->configure(fFD, connector.get(), resources.get(), settings);
 
     // Add it to the list of displays.
     fDisplays[i] = std::move(display);
   }
+}
+
+//==============================================================================
+void VideoCard::setModes()
+{
+
 }

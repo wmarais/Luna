@@ -1,3 +1,6 @@
+
+
+
 #ifndef LUNA_SERVER_DISPLAY_DISPLAY_HPP
 #define LUNA_SERVER_DISPLAY_DISPLAY_HPP
 
@@ -10,29 +13,41 @@ namespace Luna
 {
   namespace Server
   {
-    class Display
+    class Display final
     {
     public:
-      Display(std::unique_ptr<drmModeConnector,
-              decltype(&drmModeFreeConnector)> & connector);
+      //------------------------------------------------------------------------
+      // Initialise the member functions.
+      //------------------------------------------------------------------------
+      Display();
+
+      //------------------------------------------------------------------------
+      // Simply allow for function tracing in debug mode.
+      //------------------------------------------------------------------------
+      ~Display();
+
+      //------------------------------------------------------------------------
+      // The ID of the connector that the display is attached too.
+      //------------------------------------------------------------------------
+      uint32_t connectorID() const;
 
       //------------------------------------------------------------------------
       // Configure the display. It can be called at any time and can be used
       // to initially configure the display or to adjust the display
       // configuration while running / post initial configuration.
       //------------------------------------------------------------------------
-      void configure(int fd, drmModeRes * res,
+      void configure(int fd, drmModeConnector * conn, drmModeRes * res,
                      const Luna::Common::Settings * settings);
 
       //------------------------------------------------------------------------
-      // Return the width of the display in mm.
+      // Return the physical width of the display area in mm.
       //------------------------------------------------------------------------
-      uint32_t widthMM() const;
+      uint32_t physicalWidth() const;
 
       //------------------------------------------------------------------------
-      // Return the height fo the display in mm.
+      // Return the physical height fo the display area in mm.
       //------------------------------------------------------------------------
-      uint32_t heightMM() const;
+      uint32_t physicalHeight() const;
 
       //------------------------------------------------------------------------
       // The number of pixels per 1mm along the X axis of the display.
@@ -44,14 +59,10 @@ namespace Luna
       //------------------------------------------------------------------------
       float dpmmY() const;
 
+
+      void setMode(int fd, drmModeConnector * conn);
+
     private:
-
-      //------------------------------------------------------------------------
-      // There are a limited number of CRT Controllers (CRTCs) and their usage
-      // needs to be tracked to ensure they are not accidentaly re-used.
-      //------------------------------------------------------------------------
-      static std::vector<uint32_t> fUsedCRTCs;
-
       class DumbBuffer
       {
         struct drm_mode_create_dumb fBuffer;
@@ -68,15 +79,21 @@ namespace Luna
         uint32_t handle() const;
       };
 
-      class FrameBuffer
+      struct FrameBuffer
       {
         int fResult;
         int fFD;
         uint32_t fID;
-      public:
+
         FrameBuffer(int fd, DumbBuffer *buffer);
         ~FrameBuffer();
       };
+
+      //------------------------------------------------------------------------
+      // There are a limited number of CRT Controllers (CRTCs) and their usage
+      // needs to be tracked to ensure they are not accidentaly re-used.
+      //------------------------------------------------------------------------
+      static std::vector<uint32_t> fUsedCRTCs;
 
       uint32_t fConnectorID;
       uint32_t fEncoderID;
@@ -84,41 +101,59 @@ namespace Luna
       uint32_t fCRTCID;
 
       //------------------------------------------------------------------------
-      // The dumb buffer associated with the display.
+      // The active display mode.
       //------------------------------------------------------------------------
-      std::unique_ptr<DumbBuffer> fDumbBuffer;
+      drmModeModeInfo fActiveMode;
 
       //------------------------------------------------------------------------
-      // The frambuffer associated with the dumb buffer.
+      // The frambuffer that stores the pointer to the front buffer. (This is
+      // the buffer that is currently being rendered to the screen.)
       //------------------------------------------------------------------------
-      std::unique_ptr<FrameBuffer> fFrameBuffer;
+      std::unique_ptr<FrameBuffer> fFrontBufferFB;
+      std::unique_ptr<DumbBuffer> fFrontBufferDB;
 
       //------------------------------------------------------------------------
-      // The width and the height of the display in mm.
+      // The frambuffer that stores the pointer to the back buffer. (This is
+      // the buffer that the composer is rendering too.)
+      //------------------------------------------------------------------------
+      std::unique_ptr<FrameBuffer> fBackBufferFB;
+      std::unique_ptr<DumbBuffer> fBackBufferDB;
+
+      //------------------------------------------------------------------------
+      // The original CRTC configuration before the mode setting.
+      //------------------------------------------------------------------------
+      std::unique_ptr<drmModeCrtc, decltype(&drmModeFreeCrtc)> fSavedCRTC;
+
+      //------------------------------------------------------------------------
+      // The physical width and the height of the display in mm.
       //------------------------------------------------------------------------
       uint32_t fWidthMM, fHeightMM;
 
       //------------------------------------------------------------------------
-      // The physical connector that this display is attached too.
-      //------------------------------------------------------------------------
-      std::unique_ptr<drmModeConnector, decltype(&drmModeFreeConnector)>
-        fConnector;
-
-      //------------------------------------------------------------------------
       // Check if there is a currently configured Encoder and CRT Controller.
       //------------------------------------------------------------------------
-      bool isEncoderAndCRTCValid(int fd);
+      bool isEncoderAndCRTCValid(int fd, drmModeConnector *conn);
 
       //------------------------------------------------------------------------
       // Setup the Encoder and CRT Controller required for rendering to the
       // display.
       //------------------------------------------------------------------------
-      void setupEncoderAndCRTC(int fd, drmModeRes * res);
+      void setupEncoderAndCRTC(int fd, drmModeConnector * conn, drmModeRes * res);
 
       //------------------------------------------------------------------------
       // Create the framebuffer.
       //------------------------------------------------------------------------
-      void createBuffer(int fd, uint32_t width, uint32_t height, uint32_t bpp);
+      void createBuffer(int fd, const drmModeModeInfo & mode, uint32_t bpp,
+                        std::unique_ptr<DumbBuffer> & db,
+                        std::unique_ptr<FrameBuffer> & fb);
+
+      //------------------------------------------------------------------------
+      // Determine the best Mode to run the display at. If the user explicitly
+      // specified it in the settings for the display, then that will be use,
+      // otherwise the highest refresh and screen area will be selected.
+      //------------------------------------------------------------------------
+      drmModeModeInfo getBestMode(drmModeModeInfoPtr modes, uint32_t numModes,
+                                  const Common::Settings *settings);
 
     };
   }

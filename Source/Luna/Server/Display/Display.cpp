@@ -6,43 +6,95 @@ using namespace Luna::Server;
 std::vector<uint32_t> Display::fUsedCRTCs;
 
 //==============================================================================
-Display::Display(std::unique_ptr<drmModeConnector,
-  decltype(&drmModeFreeConnector)> & connector) : fConnector(nullptr, nullptr),
-  fCRTCID(0), fEncoderID(0)
+Display::Display() : fConnectorID(0), fEncoderID(0), fCRTCID(0),
+  fSavedCRTC(nullptr, nullptr)
 {
-  // Tranfer ownership of the connector to this display object.
-  fConnector = std::move(connector);
-
-  // Atleast one mode should be available.
-  if(fConnector->count_modes <= 0)
-  {
-    LUNA_THROW_RUNTIME_ERROR("No modes available for display.");
-  }
+  LUNA_TRACE_FUNCTION();
 }
 
 //==============================================================================
-void Display::configure(int fd, drmModeRes * res, const Settings * settings)
+Display::~Display()
 {
+  LUNA_TRACE_FUNCTION();
+}
+
+//==============================================================================
+uint32_t Display::connectorID() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fConnectorID;
+}
+
+//==============================================================================
+void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
+                        const Settings * settings)
+{
+  LUNA_TRACE_FUNCTION();
+
+  LUNA_LOG_DEBUG("Current connector id: " << fConnectorID << " new id: " <<
+                 conn->connector_id << ".");
+
+  // Make sure it is either a new configuration, or the connector id's match
+  // if it's a reconfiguration.
+  if(fConnectorID != 0 && fConnectorID != conn->connector_id)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Connect ID missmatch for reconfiguration, " <<
+                             "expected: " << fConnectorID << ", got: " <<
+                             conn->connector_id << ".");
+  }
+
+  // Record the connector ID for future reference.
+  fConnectorID = conn->connector_id;
+
+  // Make sure the connector has atleast on supported mode.
+  if(conn->count_modes == 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Connector " << conn->connector_id <<
+                             " does not have any supported modes.");
+  }
+
+  LUNA_LOG_INFO("Connector " << conn->connector_id << " supports " <<
+                conn->count_modes << " modes.");
+
+  // Check the best mode to use for the display.
+  fActiveMode = getBestMode(conn->modes, conn->count_modes, settings);
+
+  LUNA_LOG_INFO("Selected mode for connector " << conn->connector_id <<
+                " is " << fActiveMode.hdisplay << " x " <<
+                fActiveMode.vdisplay << " @ " << fActiveMode.vrefresh << "Hz.");
 
   // Setup a suitable Encoder and CRT Controller.
-  setupEncoderAndCRTC(fd, res);
+  setupEncoderAndCRTC(fd, conn, res);
 
+  // Setup the buffers.
+  createBuffer(fd, fActiveMode, 32, fFrontBufferDB, fFrontBufferFB);
+  createBuffer(fd, fActiveMode, 32, fBackBufferDB, fBackBufferFB);
 }
 //==============================================================================
-bool Display::isEncoderAndCRTCValid(int fd)
+bool Display::isEncoderAndCRTCValid(int fd, drmModeConnector * conn)
 {
+  LUNA_TRACE_FUNCTION();
+
   // The status of the function.
   bool status = false;
 
+  LUNA_LOG_DEBUG("Checking if existing encoder and crtc is valid.");
+
+  LUNA_LOG_DEBUG("Current encoder id: " << fEncoderID << " existing id: " <<
+                 conn->encoder_id << ".");
+
   // Check if a valid Encoder is allready attached to the connector.
-  if(fEncoderID > 0 && fConnector->encoder_id == fEncoderID)
+  if(fEncoderID > 0 && conn->encoder_id == fEncoderID)
   {
     // Get the handle to the encoder.
     std::unique_ptr<drmModeEncoder, decltype(&drmModeFreeEncoder)>
         encoder(drmModeGetEncoder(fd, fEncoderID), drmModeFreeEncoder);
 
+    LUNA_LOG_DEBUG("Current crtc id: " << fCRTCID << " existing id: " <<
+                   encoder->crtc_id << ".");
+
     // Check if the CRT Controller is valid.
-    if(encoder && fCRTCID >= 0 && encoder->crtc_id == fCRTCID)
+    if(encoder && fCRTCID > 0 && encoder->crtc_id == fCRTCID)
     {
       // The Encoder and CRTC is valid.
       status = true;
@@ -54,31 +106,52 @@ bool Display::isEncoderAndCRTCValid(int fd)
 }
 
 //==============================================================================
-void Display::setupEncoderAndCRTC(int fd, drmModeRes * res)
+void Display::setupEncoderAndCRTC(int fd, drmModeConnector * conn,
+                                  drmModeRes * res)
 {
+  LUNA_TRACE_FUNCTION();
+
   // Before trying to find a suitabled Encoder and CRTC, check if the current
   // ones are valid. (This should be true for most reconfigurations.)
-  if(isEncoderAndCRTCValid(fd))
+  if(isEncoderAndCRTCValid(fd, conn))
   {
+    LUNA_LOG_DEBUG("Existing encoder and crtc is valid.");
+
     // Nothing left to do, just return.
     return;
   }
 
+  LUNA_LOG_DEBUG("Existing encoder and crctc is not valid.");
+
   // Check if an ecoder is allready attached to the connector.
-  if(fConnector->encoder_id)
+  if(conn->encoder_id)
   {
+    LUNA_LOG_DEBUG("Checking if currently attached encoder (" <<
+                   conn->encoder_id << ") is suitable.");
+
     // Get the handle to the encoder.
     std::unique_ptr<drmModeEncoder, decltype(&drmModeFreeEncoder)>
-        encoder(drmModeGetEncoder(fd, fConnector->encoder_id),
+        encoder(drmModeGetEncoder(fd, conn->encoder_id),
                 drmModeFreeEncoder);
 
     // Check if a valid encoder was returned.
     if(encoder)
     {
+      LUNA_LOG_DEBUG("Checking if currently attached crtc (" <<
+                     encoder->crtc_id << ") is suitable.");
+
       // Check if the CRT Controller is allready in use.
-      if(std::find(fUsedCRTCs.begin(), fUsedCRTCs.end(), encoder->crtc_id) !=
+      if(std::find(fUsedCRTCs.begin(), fUsedCRTCs.end(), encoder->crtc_id) ==
          fUsedCRTCs.end())
       {
+        // Set the encoder and crtc id.
+        fEncoderID = conn->encoder_id;
+        fCRTCID = encoder->crtc_id;
+
+
+        LUNA_LOG_DEBUG("The encoder (" << fEncoderID << ") and crtc (" <<
+                       fCRTCID << ") pair is suitable.");
+
         // The encoder and CRTC is both valid and allready connected. Nothing
         // else left to do.
         return;
@@ -88,11 +161,11 @@ void Display::setupEncoderAndCRTC(int fd, drmModeRes * res)
 
   // Not suitable Encoder or CRTC has been found yet. Iterate through all the
   // possible encoders and CRTCs and find one not allready in use.
-  for(int i = 0; i < fConnector->count_encoders; i++)
+  for(int i = 0; i < conn->count_encoders; i++)
   {
     // Get the handle to the encoder.
     std::unique_ptr<drmModeEncoder, decltype(&drmModeFreeEncoder)>
-        encoder(drmModeGetEncoder(fd, fConnector->encoder_id),
+        encoder(drmModeGetEncoder(fd, conn->encoder_id),
                 drmModeFreeEncoder);
 
     // Check if the encoder was retrieved.
@@ -121,6 +194,9 @@ void Display::setupEncoderAndCRTC(int fd, drmModeRes * res)
         // Save the Encoder and CRTC ID.
         fEncoderID = encoder->encoder_id;
         fCRTCID = res->crtcs[j];
+
+        // Nothing left to do.
+        return;
       }
     }
   }
@@ -129,40 +205,40 @@ void Display::setupEncoderAndCRTC(int fd, drmModeRes * res)
 }
 
 //==============================================================================
-void Display::createBuffer(int fd, uint32_t width, uint32_t height,
-                           uint32_t bpp)
+void Display::createBuffer(int fd, const drmModeModeInfo &mode, uint32_t bpp,
+                           std::unique_ptr<DumbBuffer> & db,
+                           std::unique_ptr<FrameBuffer> & fb)
 {
   LUNA_TRACE_FUNCTION();
 
   LUNA_LOG_DEBUG("Creating dumb buffer.");
-  fDumbBuffer = std::make_unique<DumbBuffer>(fd, width, height, bpp);
+  db = std::make_unique<DumbBuffer>(fd, mode.hdisplay, mode.vdisplay, bpp);
 
   LUNA_LOG_DEBUG("Creating frame buffer.");
-  fFrameBuffer = std::make_unique<FrameBuffer>(fd, fDumbBuffer.get());
+  fb = std::make_unique<FrameBuffer>(fd, db.get());
 
   LUNA_LOG_DEBUG("Preparing buffer for memory map.");
   struct drm_mode_map_dumb mreq;
   memset(&mreq, 0, sizeof(mreq));
-  mreq.handle = fDumbBuffer->handle();
+  mreq.handle = db->handle();
   if(drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) < 0)
   {
     LUNA_THROW_RUNTIME_ERROR("Failed to map dump buffer because: " <<
                              strerror(errno))
   }
-
-
-
 }
 
 //==============================================================================
-uint32_t Display::widthMM() const
+uint32_t Display::physicalWidth() const
 {
+  LUNA_TRACE_FUNCTION();
   return fWidthMM;
 }
 
 //==============================================================================
-uint32_t Display::heightMM() const
+uint32_t Display::physicalHeight() const
 {
+  LUNA_TRACE_FUNCTION();
   return fHeightMM;
 }
 
@@ -216,6 +292,33 @@ float Display::dpmmY() const
   return dpmm;
 }
 
+//==============================================================================
+void Display::setMode(int fd, drmModeConnector * conn)
+{
+  // Check if this is the first mode change. If it is, then save the mode so
+  // it can be recovered when the application terminates.
+  if(!fSavedCRTC)
+  {
+    fSavedCRTC = std::unique_ptr<drmModeCrtc, decltype(&drmModeFreeCrtc)>
+        (drmModeGetCrtc(fd, fCRTCID), drmModeFreeCrtc);
+  }
+
+  // Try to set the mode.
+  if(drmModeSetCrtc(fd, fCRTCID, fFrontBufferFB->fID, 0, 0, &fConnectorID, 1,
+                 &fActiveMode) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to change CRTC mode.");
+  }
+}
+
+//==============================================================================
+drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
+  uint32_t numModes, const Settings * settings)
+{
+  // TODO - Implement this.
+  return modes[0];
+}
+
 //##############################################################################
 //                                DUMB BUFFER
 //##############################################################################
@@ -257,30 +360,35 @@ Display::DumbBuffer::~DumbBuffer()
 //==============================================================================
 uint32_t Display::DumbBuffer::width() const
 {
+  LUNA_TRACE_FUNCTION();
   return fBuffer.width;
 }
 
 //==============================================================================
 uint32_t Display::DumbBuffer::height() const
 {
+  LUNA_TRACE_FUNCTION();
   return fBuffer.height;
 }
 
 //==============================================================================
 uint32_t Display::DumbBuffer::bpp() const
 {
+  LUNA_TRACE_FUNCTION();
   return fBuffer.bpp;
 }
 
 //==============================================================================
 uint32_t Display::DumbBuffer::stride() const
 {
+  LUNA_TRACE_FUNCTION();
   return fBuffer.pitch;
 }
 
 //==============================================================================
 uint32_t Display::DumbBuffer::handle() const
 {
+  LUNA_TRACE_FUNCTION();
   return fBuffer.handle;
 }
 
@@ -289,6 +397,7 @@ uint32_t Display::DumbBuffer::handle() const
 //##############################################################################
 Display::FrameBuffer::FrameBuffer(int fd, DumbBuffer * buffer) : fFD(fd)
 {
+  LUNA_TRACE_FUNCTION();
   fResult = drmModeAddFB(fFD, buffer->width(), buffer->height(), 24,
               buffer->bpp(), buffer->stride(), buffer->handle(), &fID);
 
@@ -297,6 +406,7 @@ Display::FrameBuffer::FrameBuffer(int fd, DumbBuffer * buffer) : fFD(fd)
 //==============================================================================
 Display::FrameBuffer::~FrameBuffer()
 {
+  LUNA_TRACE_FUNCTION();
   if(fResult >= 0)
   {
     drmModeRmFB(fFD, fID);

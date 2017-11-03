@@ -35,15 +35,23 @@ void DisplayManager::changed(const std::string & devNode,
     // Check if the device has been added or changed.
     if(action == UDEV::kAddDevice || action == UDEV::kChangeDevice)
     {
-      // Create the Video Card object.
-      std::unique_ptr<VideoCard> videoCard =
-          std::make_unique<VideoCard>(devNode);
+      try
+      {
+        // Create the Video Card object.
+        std::unique_ptr<VideoCard> videoCard =
+            std::make_unique<VideoCard>(devNode);
 
-      // Configure the video card.
-      videoCard->configure(fSettings.get());
+        // Configure the video card.
+        videoCard->configure(fSettings.get());
 
-      // Add the video card to the map.
-      fVideoCards[devNode] = std::move(videoCard);
+        // Add the video card to the map.
+        fVideoCards[devNode] = std::move(videoCard);
+      }
+      catch(const std::exception & ex)
+      {
+        LUNA_LOG_EXCEPTION("Video card (" << devNode << ") ignored because " <<
+                           "of exception.", ex);
+      }
     }
   }
 }

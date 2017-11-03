@@ -97,7 +97,7 @@ std::string Settings::getValue(const std::string & path,
 //==============================================================================
 std::vector<std::string> Settings::getArray(const std::string & path) const
 {
-
+  (void)path;
   return std::vector<std::string>();
 }
 

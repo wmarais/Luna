@@ -29,6 +29,8 @@ namespace Luna
       // attached displays. Can be called at any time
       //------------------------------------------------------------------------
       void configure(const Luna::Common::Settings * settings);
+
+      void setModes();
     };
   }
 }
