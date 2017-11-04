@@ -19,7 +19,7 @@ namespace Luna
       //------------------------------------------------------------------------
       // Initialise the member functions.
       //------------------------------------------------------------------------
-      Display();
+      Display(int fd);
 
       //------------------------------------------------------------------------
       // Simply allow for function tracing in debug mode.
@@ -60,7 +60,19 @@ namespace Luna
       float dpmmY() const;
 
 
-      void setMode(int fd, drmModeConnector * conn);
+      void setMode(int fd);
+
+      //------------------------------------------------------------------------
+      // Swap the back and front buffers. The screen will repaint on the next
+      // vblank (vsync) cycle. The function is partially async, i.e. the function
+      //------------------------------------------------------------------------
+      void swapBuffer();
+
+      //------------------------------------------------------------------------
+      // Fill the buffer with the specified color. Primarily used for testing
+      // purposes.
+      //------------------------------------------------------------------------
+      void fill(uint8_t r, uint8_t g, uint8_t b);
 
     private:
       class DumbBuffer
@@ -77,6 +89,7 @@ namespace Luna
         uint32_t bpp() const;
         uint32_t stride() const;
         uint32_t handle() const;
+        uint32_t size() const;
       };
 
       struct FrameBuffer
@@ -84,9 +97,16 @@ namespace Luna
         int fResult;
         int fFD;
         uint32_t fID;
+        uint8_t * fPixelMap;
+        std::unique_ptr<DumbBuffer> fDumbBuffer;
 
-        FrameBuffer(int fd, DumbBuffer *buffer);
+      public:
+
+        FrameBuffer(int fd, uint32_t width, uint32_t height, uint32_t bpp);
         ~FrameBuffer();
+
+        uint32_t id() const;
+        uint8_t * pixels();
       };
 
       //------------------------------------------------------------------------
@@ -100,6 +120,31 @@ namespace Luna
 
       uint32_t fCRTCID;
 
+      int fFD;
+
+      //------------------------------------------------------------------------
+      // The thread used for rendering the framebuffer to the screen.
+      //------------------------------------------------------------------------
+      std::unique_ptr<std::thread> fRenderThread;
+
+      //------------------------------------------------------------------------
+      //
+      //------------------------------------------------------------------------
+      std::atomic_bool fRendering;
+
+      //------------------------------------------------------------------------
+      // Flag indicating if the middle buffer has been updated and should be
+      // rendered out to the screen.
+      //------------------------------------------------------------------------
+      std::atomic_bool fMidBufReady;
+
+      std::atomic_bool fFrontBufReady;
+
+      //------------------------------------------------------------------------
+      // The mutex that is used protect the middle buffer pointer when swapped.
+      //------------------------------------------------------------------------
+      std::mutex fMidBuffLock;
+
       //------------------------------------------------------------------------
       // The active display mode.
       //------------------------------------------------------------------------
@@ -109,15 +154,19 @@ namespace Luna
       // The frambuffer that stores the pointer to the front buffer. (This is
       // the buffer that is currently being rendered to the screen.)
       //------------------------------------------------------------------------
-      std::unique_ptr<FrameBuffer> fFrontBufferFB;
-      std::unique_ptr<DumbBuffer> fFrontBufferDB;
+      std::unique_ptr<FrameBuffer> fFrontBuffer;
+
+      //------------------------------------------------------------------------
+      // The frambuffer that is used to cache frames if required so that the
+      // main processing thread is locked.
+      //------------------------------------------------------------------------
+      std::unique_ptr<FrameBuffer> fMiddleBuffer;
 
       //------------------------------------------------------------------------
       // The frambuffer that stores the pointer to the back buffer. (This is
       // the buffer that the composer is rendering too.)
       //------------------------------------------------------------------------
-      std::unique_ptr<FrameBuffer> fBackBufferFB;
-      std::unique_ptr<DumbBuffer> fBackBufferDB;
+      std::unique_ptr<FrameBuffer> fBackBuffer;
 
       //------------------------------------------------------------------------
       // The original CRTC configuration before the mode setting.
@@ -138,13 +187,13 @@ namespace Luna
       // Setup the Encoder and CRT Controller required for rendering to the
       // display.
       //------------------------------------------------------------------------
-      void setupEncoderAndCRTC(int fd, drmModeConnector * conn, drmModeRes * res);
+      void setupEncoderAndCRTC(int fd, drmModeConnector * conn,
+                               drmModeRes * res);
 
       //------------------------------------------------------------------------
       // Create the framebuffer.
       //------------------------------------------------------------------------
       void createBuffer(int fd, const drmModeModeInfo & mode, uint32_t bpp,
-                        std::unique_ptr<DumbBuffer> & db,
                         std::unique_ptr<FrameBuffer> & fb);
 
       //------------------------------------------------------------------------
@@ -155,6 +204,22 @@ namespace Luna
       drmModeModeInfo getBestMode(drmModeModeInfoPtr modes, uint32_t numModes,
                                   const Common::Settings *settings);
 
+      //------------------------------------------------------------------------
+      //
+      //------------------------------------------------------------------------
+      void render();
+
+      //------------------------------------------------------------------------
+      // Start the rendering thread that renders the buffers to the screen. This
+      // must always be called before something will be rendered to the screen.
+      //------------------------------------------------------------------------
+      void startRendering();
+
+      //------------------------------------------------------------------------
+      // Stop the rendering thread. This must always be called before chaning
+      // the configuration.
+      //------------------------------------------------------------------------
+      void stopRendering();
     };
   }
 }

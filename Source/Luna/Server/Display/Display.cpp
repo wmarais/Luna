@@ -6,8 +6,8 @@ using namespace Luna::Server;
 std::vector<uint32_t> Display::fUsedCRTCs;
 
 //==============================================================================
-Display::Display() : fConnectorID(0), fEncoderID(0), fCRTCID(0),
-  fSavedCRTC(nullptr, nullptr)
+Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
+  fMidBufReady(false), fSavedCRTC(nullptr, nullptr)
 {
   LUNA_TRACE_FUNCTION();
 }
@@ -30,6 +30,9 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
                         const Settings * settings)
 {
   LUNA_TRACE_FUNCTION();
+
+  // Make sure the rendering is disabled.
+  stopRendering();
 
   LUNA_LOG_DEBUG("Current connector id: " << fConnectorID << " new id: " <<
                  conn->connector_id << ".");
@@ -67,8 +70,8 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
   setupEncoderAndCRTC(fd, conn, res);
 
   // Setup the buffers.
-  createBuffer(fd, fActiveMode, 32, fFrontBufferDB, fFrontBufferFB);
-  createBuffer(fd, fActiveMode, 32, fBackBufferDB, fBackBufferFB);
+  createBuffer(fd, fActiveMode, 32, fFrontBuffer);
+  createBuffer(fd, fActiveMode, 32, fBackBuffer);
 }
 //==============================================================================
 bool Display::isEncoderAndCRTCValid(int fd, drmModeConnector * conn)
@@ -206,26 +209,11 @@ void Display::setupEncoderAndCRTC(int fd, drmModeConnector * conn,
 
 //==============================================================================
 void Display::createBuffer(int fd, const drmModeModeInfo &mode, uint32_t bpp,
-                           std::unique_ptr<DumbBuffer> & db,
                            std::unique_ptr<FrameBuffer> & fb)
 {
   LUNA_TRACE_FUNCTION();
 
-  LUNA_LOG_DEBUG("Creating dumb buffer.");
-  db = std::make_unique<DumbBuffer>(fd, mode.hdisplay, mode.vdisplay, bpp);
-
-  LUNA_LOG_DEBUG("Creating frame buffer.");
-  fb = std::make_unique<FrameBuffer>(fd, db.get());
-
-  LUNA_LOG_DEBUG("Preparing buffer for memory map.");
-  struct drm_mode_map_dumb mreq;
-  memset(&mreq, 0, sizeof(mreq));
-  mreq.handle = db->handle();
-  if(drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) < 0)
-  {
-    LUNA_THROW_RUNTIME_ERROR("Failed to map dump buffer because: " <<
-                             strerror(errno))
-  }
+  fb = std::make_unique<FrameBuffer>(fd, mode.hdisplay, mode.vdisplay, bpp);
 }
 
 //==============================================================================
@@ -293,7 +281,7 @@ float Display::dpmmY() const
 }
 
 //==============================================================================
-void Display::setMode(int fd, drmModeConnector * conn)
+void Display::setMode(int fd/*, drmModeConnector * conn*/)
 {
   // Check if this is the first mode change. If it is, then save the mode so
   // it can be recovered when the application terminates.
@@ -304,11 +292,14 @@ void Display::setMode(int fd, drmModeConnector * conn)
   }
 
   // Try to set the mode.
-  if(drmModeSetCrtc(fd, fCRTCID, fFrontBufferFB->fID, 0, 0, &fConnectorID, 1,
+  if(drmModeSetCrtc(fd, fCRTCID, fFrontBuffer->fID, 0, 0, &fConnectorID, 1,
                  &fActiveMode) < 0)
   {
     LUNA_THROW_RUNTIME_ERROR("Failed to change CRTC mode.");
   }
+
+  // Start rendering engine.
+  startRendering();
 }
 
 //==============================================================================
@@ -317,6 +308,109 @@ drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
 {
   // TODO - Implement this.
   return modes[0];
+}
+
+//==============================================================================
+void Display::fill(uint8_t r, uint8_t g, uint8_t b)
+{
+  for(int r = 0; r < fActiveMode.vdisplay; r++)
+  {
+    for(int c = 0; c < fActiveMode.hdisplay*3; c+3)
+    {
+      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3] = r;
+      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3 + 1] = g;
+      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3 + 2] = b;
+    }
+  }
+}
+
+//==============================================================================
+void Display::swapBuffer()
+{
+  // Lock the protection mutex.
+  std::lock_guard<std::mutex> lock(fMidBuffLock);
+
+  // Swap the back and middle buffer.
+  fBackBuffer.swap(fMiddleBuffer);
+
+  // Indicate that a new frame is available.
+  fMidBufReady = true;
+}
+
+//==============================================================================
+void Display::render()
+{
+  // Keep looping till stopRendering() is called.
+  while(fRendering)
+  {
+    // Check if the buffer should be flipped.
+    if(fMidBufReady)
+    {
+      // Lock the protection mutex.
+      std::lock_guard<std::mutex> lock(fMidBuffLock);
+
+      // Swap the pointers.
+      fFrontBuffer.swap(fMiddleBuffer);
+
+      // Mark the front buffer as ready to be rendered.
+      fFrontBufReady = true;
+    }
+
+    // Check if the front buffer should be rendered.
+    if(fFrontBufReady)
+    {
+      drmVBlank vbl;
+      vbl.request.type = DRM_VBLANK_RELATIVE;
+      vbl.request.sequence = 1;
+
+      // Wait for a VBlank event.
+      drmWaitVBlank(fFD, &vbl);
+
+      // Flip the page.
+      drmModePageFlip(fFD, fCRTCID, fFrontBuffer->id(),
+                      DRM_MODE_PAGE_FLIP_EVENT, nullptr);
+
+      // Mark the front buffer as not ready (don't paint unless we need too).
+      fFrontBufReady = false;
+    }
+  }
+
+  // Wait for a VBlank event so we don't inadvertedly set crtc in the middle of
+  // a page flip.
+  drmVBlank vbl;
+  vbl.request.type = DRM_VBLANK_RELATIVE;
+  vbl.request.sequence = 1;
+
+  // Wait for a VBlank event.
+  drmWaitVBlank(fFD, &vbl);
+}
+
+//==============================================================================
+void Display::startRendering()
+{
+  // Dont start it again if it's allready rederning.
+  if(!fRendering)
+  {
+    // Set the rendering flag before starting the thread.
+    fRendering = true;
+
+    // Create the thread.
+    fRenderThread = std::make_unique<std::thread>(&Display::render, this);
+
+  }
+}
+
+//==============================================================================
+void Display::stopRendering()
+{
+  if(fRenderThread)
+  {
+    // Set rendering to false.
+    fRendering = false;
+
+    // wait for the thread to join.
+    fRenderThread->join();
+  }
 }
 
 //##############################################################################
@@ -392,15 +486,53 @@ uint32_t Display::DumbBuffer::handle() const
   return fBuffer.handle;
 }
 
+//==============================================================================
+uint32_t Display::DumbBuffer::size() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fBuffer.size;
+}
+
 //##############################################################################
 //                                FRAME BUFFER
 //##############################################################################
-Display::FrameBuffer::FrameBuffer(int fd, DumbBuffer * buffer) : fFD(fd)
+Display::FrameBuffer::FrameBuffer(int fd, uint32_t width, uint32_t height,
+  uint32_t bpp) : fFD(fd),
+  fDumbBuffer(std::make_unique<DumbBuffer>(fd, width, height, bpp))
 {
   LUNA_TRACE_FUNCTION();
-  fResult = drmModeAddFB(fFD, buffer->width(), buffer->height(), 24,
-              buffer->bpp(), buffer->stride(), buffer->handle(), &fID);
 
+  LUNA_LOG_DEBUG("Creating Frame Buffer object.");
+  fResult = drmModeAddFB(fFD,
+                         fDumbBuffer->width(),
+                         fDumbBuffer->height(),
+                         24,
+                         fDumbBuffer->bpp(),
+                         fDumbBuffer->stride(),
+                         fDumbBuffer->handle(),
+                         &fID);
+
+  LUNA_LOG_DEBUG("Preparing buffer for memory map.");
+
+  struct drm_mode_map_dumb mreq;
+  memset(&mreq, 0, sizeof(mreq));
+  mreq.handle = fDumbBuffer->handle();
+
+  if(drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to map dump buffer because: " <<
+                             strerror(errno))
+  }
+
+  LUNA_LOG_DEBUG("Performing memory map.");
+  fPixelMap = static_cast<uint8_t*>(mmap(nullptr, fDumbBuffer->size(),
+                                         PROT_READ | PROT_WRITE,
+                   MAP_SHARED, fd, mreq.offset));
+
+  if(fPixelMap == MAP_FAILED)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to map memory.");
+  }
 }
 
 //==============================================================================
@@ -411,4 +543,16 @@ Display::FrameBuffer::~FrameBuffer()
   {
     drmModeRmFB(fFD, fID);
   }
+}
+
+//==============================================================================
+uint32_t Display::FrameBuffer::id() const
+{
+  return fID;
+}
+
+//==============================================================================
+uint8_t * Display::FrameBuffer::pixels()
+{
+  return fPixelMap;
 }

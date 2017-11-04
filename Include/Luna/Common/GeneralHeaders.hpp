@@ -26,5 +26,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <signal.h>
+#include <sys/mman.h>
 
 #endif // LUNA_COMMON_GENERAL_HEADERS_HPP

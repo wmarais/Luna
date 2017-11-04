@@ -106,7 +106,7 @@ void VideoCard::configure(const Settings * settings)
     }
 
     // Create the display.
-    std::unique_ptr<Display> display = std::make_unique<Display>();
+    std::unique_ptr<Display> display = std::make_unique<Display>(fFD);
 
     // COnfigure the display.
     display->configure(fFD, connector.get(), resources.get(), settings);
@@ -114,10 +114,36 @@ void VideoCard::configure(const Settings * settings)
     // Add it to the list of displays.
     fDisplays[i] = std::move(display);
   }
+
+  // Set all the modes.
+  setModes();
 }
 
 //==============================================================================
 void VideoCard::setModes()
 {
+  // Set all the display modes.
+  for(std::map<int, std::unique_ptr<Display>>::iterator iter = fDisplays.begin();
+      iter != fDisplays.end(); iter++)
+  {
+    iter->second->setMode(fFD);
+  }
+}
 
+//==============================================================================
+void VideoCard::renderTest()
+{
+  // Cycle the colours.
+  for(int i = 0; i < 255; i++)
+  {
+    // Set all the display modes.
+    for(std::map<int, std::unique_ptr<Display>>::iterator iter =
+        fDisplays.begin(); iter != fDisplays.end(); iter++)
+    {
+      iter->second->fill(i, i, i);
+    }
+
+    // Sleep for a bit.
+    usleep(20000);
+  }
 }

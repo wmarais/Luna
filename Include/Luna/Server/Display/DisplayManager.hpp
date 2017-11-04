@@ -35,6 +35,11 @@ namespace Luna
       // the start of the application.
       //------------------------------------------------------------------------
       void changed(const std::string & devNode, UDEV::DeviceActions action);
+
+      //------------------------------------------------------------------------
+      // Perform a render test on all the video cards and displays.
+      //------------------------------------------------------------------------
+      void renderTest();
     };
   }
 }

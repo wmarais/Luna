@@ -31,6 +31,8 @@ namespace Luna
       void configure(const Luna::Common::Settings * settings);
 
       void setModes();
+
+      void renderTest();
     };
   }
 }

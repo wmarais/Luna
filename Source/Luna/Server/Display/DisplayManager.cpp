@@ -55,3 +55,13 @@ void DisplayManager::changed(const std::string & devNode,
     }
   }
 }
+
+//==============================================================================
+void DisplayManager::renderTest()
+{
+  for(std::map<std::string, std::unique_ptr<VideoCard>>::iterator iter =
+      fVideoCards.begin(); iter != fVideoCards.end(); iter++)
+  {
+    iter->second->renderTest();
+  }
+}
