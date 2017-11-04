@@ -63,6 +63,9 @@ void Earth::run(int argc, char * argv[])
   // Scan for the devices allready plugged in.
   fUDEV->scan(fInputManager.get(), fDisplayManager.get());
 
+  // Perform a render test.
+  fDisplayManager->renderTest();
+
 
   /*// Create the session manager.
   LUNA_LOG_INFO("Creating the session manager.");
