@@ -7,7 +7,8 @@ std::vector<uint32_t> Display::fUsedCRTCs;
 
 //==============================================================================
 Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
-  fMidBufReady(false), fSavedCRTC(nullptr, nullptr)
+  fRendering(false), fMidBufReady(false), fFrontBufReady(false),
+  fSavedCRTC(nullptr, nullptr)
 {
   LUNA_TRACE_FUNCTION();
 }
@@ -70,7 +71,13 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
   setupEncoderAndCRTC(fd, conn, res);
 
   // Setup the buffers.
+  LUNA_LOG_DEBUG("Creating front buffer.");
   createBuffer(fd, fActiveMode, 32, fFrontBuffer);
+
+  LUNA_LOG_DEBUG("Creating middle buffer.");
+  createBuffer(fd, fActiveMode, 32, fMiddleBuffer);
+
+  LUNA_LOG_DEBUG("Creating back buffer.");
   createBuffer(fd, fActiveMode, 32, fBackBuffer);
 }
 //==============================================================================
@@ -283,22 +290,25 @@ float Display::dpmmY() const
 //==============================================================================
 void Display::setMode(int fd/*, drmModeConnector * conn*/)
 {
+  LUNA_TRACE_FUNCTION();
+
   // Check if this is the first mode change. If it is, then save the mode so
   // it can be recovered when the application terminates.
   if(!fSavedCRTC)
   {
+    LUNA_LOG_DEBUG("Saving current crtc mode.");
     fSavedCRTC = std::unique_ptr<drmModeCrtc, decltype(&drmModeFreeCrtc)>
         (drmModeGetCrtc(fd, fCRTCID), drmModeFreeCrtc);
   }
 
-  // Try to set the mode.
+  LUNA_LOG_DEBUG("Setting desired crtc mode.");
   if(drmModeSetCrtc(fd, fCRTCID, fFrontBuffer->fID, 0, 0, &fConnectorID, 1,
                  &fActiveMode) < 0)
   {
     LUNA_THROW_RUNTIME_ERROR("Failed to change CRTC mode.");
   }
 
-  // Start rendering engine.
+  LUNA_LOG_DEBUG("Starting the rendering thread.");
   startRendering();
 }
 
@@ -327,6 +337,8 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 //==============================================================================
 void Display::swapBuffers()
 {
+  LUNA_TRACE_FUNCTION();
+
   // Lock the protection mutex.
   std::lock_guard<std::mutex> lock(fMidBuffLock);
 
@@ -340,6 +352,8 @@ void Display::swapBuffers()
 //==============================================================================
 void Display::render()
 {
+  LUNA_TRACE_FUNCTION();
+
   // Keep looping till stopRendering() is called.
   while(fRendering)
   {
@@ -381,35 +395,49 @@ void Display::render()
   vbl.request.type = DRM_VBLANK_RELATIVE;
   vbl.request.sequence = 1;
 
-  // Wait for a VBlank event.
+  LUNA_LOG_DEBUG("Waiting for last vblank event.");
   drmWaitVBlank(fFD, &vbl);
 }
 
 //==============================================================================
 void Display::startRendering()
 {
+  LUNA_TRACE_FUNCTION();
+
   // Dont start it again if it's allready rederning.
   if(!fRendering)
   {
+    LUNA_LOG_DEBUG("Starting render thread.");
     // Set the rendering flag before starting the thread.
     fRendering = true;
 
     // Create the thread.
     fRenderThread = std::make_unique<std::thread>(&Display::render, this);
-
+  }
+  else
+  {
+    LUNA_LOG_DEBUG("Rendering thread allready running.");
   }
 }
 
 //==============================================================================
 void Display::stopRendering()
 {
+  LUNA_TRACE_FUNCTION();
+
   if(fRenderThread)
   {
+    LUNA_LOG_DEBUG("Stopping rendering thread.");
+
     // Set rendering to false.
     fRendering = false;
 
     // wait for the thread to join.
     fRenderThread->join();
+  }
+  else
+  {
+    LUNA_LOG_DEBUG("Rendering thread allready stopped.");
   }
 }
 
@@ -429,7 +457,7 @@ Display::DumbBuffer::DumbBuffer(int fd, uint32_t width, uint32_t height,
   fBuffer.height = height;
   fBuffer.bpp = bpp;
 
-  // Create the buffer.
+  LUNA_LOG_DEBUG("Creating dumb buffer.");
   fResult = drmIoctl(fFD, DRM_IOCTL_MODE_CREATE_DUMB, &fBuffer);
 }
 
@@ -445,6 +473,8 @@ Display::DumbBuffer::~DumbBuffer()
     struct drm_mode_destroy_dumb deleteBuffer;
     memset(&deleteBuffer, 0, sizeof(deleteBuffer));
     deleteBuffer.handle = fBuffer.handle;
+
+    LUNA_LOG_DEBUG("Destroying dumb buffer.");
 
     // Delete the buffer.
     drmIoctl(fFD, DRM_IOCTL_MODE_DESTROY_DUMB, &deleteBuffer);
