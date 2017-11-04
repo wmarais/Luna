@@ -50,18 +50,23 @@ endif()
 set(LunaCommon_HEADERS
   Include/Luna/Common.hpp
 
+  Include/Luna/Common/Debug/Exception.hpp
+  Include/Luna/Common/Debug/FunctionTracer.hpp
+  Include/Luna/Common/Debug/Log.hpp
+
   Include/Luna/Common/Event.hpp
-  Include/Luna/Common/Exception.hpp
-  Include/Luna/Common/Log.hpp
   Include/Luna/Common/GeneralHeaders.hpp
   Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
   Include/Luna/Common/SystemHeaders.hpp
 )
 
-set(LunaCommon_SOURCES
+set(LunaCommon_SOURCES  
+  Source/Luna/Common/Debug/Exception.cpp
+  Source/Luna/Common/Debug/FunctionTracer.cpp
+  Source/Luna/Common/Debug/Log.cpp
+
   Source/Luna/Common/Event.cpp
-  Source/Luna/Common/Log.cpp
   Source/Luna/Common/Settings.cpp
 )
 
@@ -151,7 +156,7 @@ set(LunaEarth_SOURCES
 )
 
 add_executable(LunaEarth ${LunaEarth_HEADERS} ${LunaEarth_SOURCES})
-target_link_libraries(LunaEarth LunaCommon LunaServer ${Luna_LIBCONFIGPP}
+target_link_libraries(LunaEarth LunaServer LunaCommon ${Luna_LIBCONFIGPP}
     ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 

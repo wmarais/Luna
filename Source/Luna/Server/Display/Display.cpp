@@ -578,11 +578,13 @@ Display::FrameBuffer::~FrameBuffer()
 //==============================================================================
 uint32_t Display::FrameBuffer::id() const
 {
+  LUNA_TRACE_FUNCTION();
   return fID;
 }
 
 //==============================================================================
 uint8_t * Display::FrameBuffer::pixels()
 {
+  LUNA_TRACE_FUNCTION();
   return fPixelMap;
 }

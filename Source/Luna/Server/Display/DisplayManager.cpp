@@ -49,8 +49,8 @@ void DisplayManager::changed(const std::string & devNode,
       }
       catch(const std::exception & ex)
       {
-        LUNA_LOG_EXCEPTION("Video card (" << devNode << ") ignored because " <<
-                           "of exception.", ex);
+        LUNA_LOG_EXCEPTION(ex);
+        LUNA_LOG_ERROR("Video card (" << devNode << ") ignored.");
       }
     }
   }

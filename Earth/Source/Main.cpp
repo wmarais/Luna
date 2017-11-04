@@ -21,9 +21,6 @@ int main(int argc, char * argv[])
 
   try
   {
-    // Create the log.
-    Log::create();
-
     LUNA_LOG_INFO("Starting LunaEarth ...");
 
     // Create the earth object.
@@ -39,13 +36,10 @@ int main(int argc, char * argv[])
     }
 
     LUNA_LOG_INFO("Stopping LunaEarth ...");
-
-    // Destroy the log.
-    Log::destroy();
   }
   catch(std::exception & ex)
   {
-    LUNA_LOG_EXCEPTION("Failed to execute LunaEarth because of exception.", ex);
+    LUNA_LOG_EXCEPTION(ex);
 
     // Indicate a failure exit state.
     status = EXIT_FAILURE;

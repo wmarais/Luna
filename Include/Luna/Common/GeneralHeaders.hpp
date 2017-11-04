@@ -14,6 +14,7 @@
 #include <sstream>
 #include <cassert>
 #include <algorithm>
+#include <queue>
 
 #include <uuid/uuid.h>
 #include <libconfig.h++>

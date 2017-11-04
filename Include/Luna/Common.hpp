@@ -3,8 +3,9 @@
 
 #include "Common/GeneralHeaders.hpp"
 #include "Common/Event.hpp"
-#include "Common/Exception.hpp"
-#include "Common/Log.hpp"
+#include "Common/Debug/Exception.hpp"
+#include "Common/Debug/Log.hpp"
+#include "Common/Debug/FunctionTracer.hpp"
 #include "Common/Settings.hpp"
 
 
