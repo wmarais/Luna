@@ -325,7 +325,7 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 }
 
 //==============================================================================
-void Display::swapBuffer()
+void Display::swapBuffers()
 {
   // Lock the protection mutex.
   std::lock_guard<std::mutex> lock(fMidBuffLock);

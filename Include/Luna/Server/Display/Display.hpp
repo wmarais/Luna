@@ -66,7 +66,7 @@ namespace Luna
       // Swap the back and front buffers. The screen will repaint on the next
       // vblank (vsync) cycle. The function is partially async, i.e. the function
       //------------------------------------------------------------------------
-      void swapBuffer();
+      void swapBuffers();
 
       //------------------------------------------------------------------------
       // Fill the buffer with the specified color. Primarily used for testing

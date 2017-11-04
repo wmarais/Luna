@@ -141,6 +141,9 @@ void VideoCard::renderTest()
         fDisplays.begin(); iter != fDisplays.end(); iter++)
     {
       iter->second->fill(i, i, i);
+
+      // Swap the bufferws.
+      iter->second->swapBuffers();
     }
 
     // Sleep for a bit.
