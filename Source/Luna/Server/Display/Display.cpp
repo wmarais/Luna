@@ -326,6 +326,9 @@ drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
   LUNA_UNUSED_PARAM(numModes);
   LUNA_UNUSED_PARAM(settings);
 
+  LUNA_LOG_DEBUG("Best Mode: " << modes[0].hdisplay << " x " <<
+                 modes[0].vdisplay << " @ " << modes[0].vrefresh << ".");
+
   // TODO - Implement this.
   return modes[0];
 }
@@ -336,12 +339,13 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
   LUNA_TRACE_FUNCTION();
   uint8_t * pixels = fBackBuffer->pixels();
 
-  for(int row = 0; row < fActiveMode.vdisplay; row++)
+  for(uint32_t row = 0; row < fBackBuffer->height(); row++)
   {
-    for(int col = 0; col < fActiveMode.hdisplay*4; col += 4)
+    for(uint32_t col = 0; col < fBackBuffer->width(); col++)
     {
       // Calculate the pixel offset.
-      size_t offset = fBackBuffer->stride() * row + col * fBackBuffer->bpp();
+      size_t offset = fBackBuffer->stride() * row + col *
+          (fBackBuffer->bpp()/8);
 
       // Calculate the pixel value.
       uint32_t pixVal = r;
@@ -557,15 +561,18 @@ Display::FrameBuffer::FrameBuffer(int fd, uint32_t width, uint32_t height) :
 {
   LUNA_TRACE_FUNCTION();
 
+  LUNA_LOG_DEBUG("Creating Frame Buffer, " << fDumbBuffer->width() << " x " <<
+                 fDumbBuffer->height() << ", Color Depth: " << kColourDepth <<
+                 ", BPP: " << fDumbBuffer->bpp() << ", Stride: " <<
+                 fDumbBuffer->stride() << ".");
+
   LUNA_LOG_DEBUG("Creating Frame Buffer object.");
-  fResult = drmModeAddFB(fFD,
-                         fDumbBuffer->width(),
-                         fDumbBuffer->height(),
-                         kColourDepth,
-                         fDumbBuffer->bpp(),
-                         fDumbBuffer->stride(),
-                         fDumbBuffer->handle(),
-                         &fID);
+  if(drmModeAddFB(fFD, fDumbBuffer->width(), fDumbBuffer->height(),
+                  kColourDepth, fDumbBuffer->bpp(), fDumbBuffer->stride(),
+                  fDumbBuffer->handle(), &fID) < 0)
+  {
+    LUNA_THROW_RUNTIME_ERROR("Failed to create Frame Buffer object.");
+  }
 
   LUNA_LOG_DEBUG("Preparing buffer for memory map.");
 
@@ -612,6 +619,20 @@ uint8_t * Display::FrameBuffer::pixels()
 {
   LUNA_TRACE_FUNCTION();
   return fPixelMap;
+}
+
+//==============================================================================
+uint32_t Display::FrameBuffer::width() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fDumbBuffer->width();
+}
+
+//==============================================================================
+uint32_t Display::FrameBuffer::height() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fDumbBuffer->height();
 }
 
 //==============================================================================

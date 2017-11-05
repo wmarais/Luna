@@ -108,6 +108,8 @@ namespace Luna
         uint32_t id() const;
         uint8_t * pixels();
 
+        uint32_t width() const;
+        uint32_t height() const;
         uint32_t stride() const;
         uint32_t bpp() const;
       };
