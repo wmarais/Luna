@@ -347,15 +347,11 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
       size_t offset = fBackBuffer->stride() * row + col *
           (fBackBuffer->bpp()/8);
 
-      // Calculate the pixel value.
-      uint32_t pixVal = r;
-      pixVal <<= 8;
-      pixVal |= g;
-      pixVal <<= 8;
-      pixVal |= b;
-
-      // Set the pixel value.
-      *reinterpret_cast<uint32_t*>(pixels + offset) = pixVal;
+      // Set the pixel values.
+      pixels[offset] = 0;
+      pixels[offset + 1] = r;
+      pixels[offset + 2] = g;
+      pixels[offset + 3] = b;
     }
   }
 }
