@@ -5,6 +5,9 @@ using namespace Luna::Server;
 
 std::vector<uint32_t> Display::fUsedCRTCs;
 
+const uint32_t Display::kBitsPerPixel = 32;
+const uint32_t Display::kColourDepth = 24;
+
 //==============================================================================
 Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
   fRendering(false), fMidBufReady(false), fFrontBufReady(false),
@@ -83,15 +86,15 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
   // Setup the buffers.
   LUNA_LOG_DEBUG("Creating front buffer.");
   fFrontBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
-                                               fActiveMode.vdisplay, 32);
+                                               fActiveMode.vdisplay);
 
   LUNA_LOG_DEBUG("Creating middle buffer.");
   fMiddleBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
-                                                fActiveMode.vdisplay, 32);
+                                                fActiveMode.vdisplay);
 
   LUNA_LOG_DEBUG("Creating back buffer.");
   fBackBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
-                                              fActiveMode.vdisplay, 32);
+                                              fActiveMode.vdisplay);
 }
 //==============================================================================
 bool Display::isEncoderAndCRTCValid(int fd, drmModeConnector * conn)
@@ -331,15 +334,24 @@ drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
 void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 {
   LUNA_TRACE_FUNCTION();
-  uint8_t * pixel = fBackBuffer->pixels();
+  uint8_t * pixels = fBackBuffer->pixels();
 
   for(int row = 0; row < fActiveMode.vdisplay; row++)
   {
     for(int col = 0; col < fActiveMode.hdisplay*4; col += 4)
     {
-      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 1] = r;
-      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 2] = g;
-      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 3] = b;
+      // Calculate the pixel offset.
+      size_t offset = fBackBuffer->stride() * row + col * fBackBuffer->bpp();
+
+      // Calculate the pixel value.
+      uint32_t pixVal = r;
+      pixVal <<= 8;
+      pixVal |= g;
+      pixVal <<= 8;
+      pixVal |= b;
+
+      // Set the pixel value.
+      *reinterpret_cast<uint32_t*>(pixels + offset) = pixVal;
     }
   }
 }
@@ -458,8 +470,8 @@ void Display::stopRendering()
 //##############################################################################
 //                                DUMB BUFFER
 //##############################################################################
-Display::DumbBuffer::DumbBuffer(int fd, uint32_t width, uint32_t height,
-                                uint32_t bpp) : fResult(-1), fFD(fd)
+Display::DumbBuffer::DumbBuffer(int fd, uint32_t width, uint32_t height) :
+  fResult(-1), fFD(fd)
 {
   LUNA_TRACE_FUNCTION();
 
@@ -469,7 +481,7 @@ Display::DumbBuffer::DumbBuffer(int fd, uint32_t width, uint32_t height,
   // Set the desired fields.
   fBuffer.width = width;
   fBuffer.height = height;
-  fBuffer.bpp = bpp;
+  fBuffer.bpp = kBitsPerPixel;
 
   LUNA_LOG_DEBUG("Creating dumb buffer.");
   fResult = drmIoctl(fFD, DRM_IOCTL_MODE_CREATE_DUMB, &fBuffer);
@@ -540,9 +552,8 @@ uint32_t Display::DumbBuffer::size() const
 //##############################################################################
 //                                FRAME BUFFER
 //##############################################################################
-Display::FrameBuffer::FrameBuffer(int fd, uint32_t width, uint32_t height,
-  uint32_t bpp) : fFD(fd),
-  fDumbBuffer(std::make_unique<DumbBuffer>(fd, width, height, bpp))
+Display::FrameBuffer::FrameBuffer(int fd, uint32_t width, uint32_t height) :
+  fFD(fd), fDumbBuffer(std::make_unique<DumbBuffer>(fd, width, height))
 {
   LUNA_TRACE_FUNCTION();
 
@@ -550,7 +561,7 @@ Display::FrameBuffer::FrameBuffer(int fd, uint32_t width, uint32_t height,
   fResult = drmModeAddFB(fFD,
                          fDumbBuffer->width(),
                          fDumbBuffer->height(),
-                         24,
+                         kColourDepth,
                          fDumbBuffer->bpp(),
                          fDumbBuffer->stride(),
                          fDumbBuffer->handle(),
@@ -601,4 +612,18 @@ uint8_t * Display::FrameBuffer::pixels()
 {
   LUNA_TRACE_FUNCTION();
   return fPixelMap;
+}
+
+//==============================================================================
+uint32_t Display::FrameBuffer::stride() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fDumbBuffer->stride();
+}
+
+//==============================================================================
+uint32_t Display::FrameBuffer::bpp() const
+{
+  LUNA_TRACE_FUNCTION();
+  return fDumbBuffer->bpp();
 }

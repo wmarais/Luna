@@ -81,7 +81,7 @@ namespace Luna
         int fResult;
         int fFD;
       public:
-        DumbBuffer(int fd, uint32_t width, uint32_t height, uint32_t bpp);
+        DumbBuffer(int fd, uint32_t width, uint32_t height);
         ~DumbBuffer();
 
         uint32_t width() const;
@@ -102,12 +102,18 @@ namespace Luna
 
       public:
 
-        FrameBuffer(int fd, uint32_t width, uint32_t height, uint32_t bpp);
+        FrameBuffer(int fd, uint32_t width, uint32_t height);
         ~FrameBuffer();
 
         uint32_t id() const;
         uint8_t * pixels();
+
+        uint32_t stride() const;
+        uint32_t bpp() const;
       };
+
+      static const uint32_t kBitsPerPixel;
+      static const uint32_t kColourDepth;
 
       //------------------------------------------------------------------------
       // There are a limited number of CRT Controllers (CRTCs) and their usage
