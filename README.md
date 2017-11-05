@@ -111,6 +111,8 @@ To execute with logging (log function to be improved in future version):
 ./LunaEarth 2>&1 | tee log.txt
 ```
 
+To quit, simply press Ctrl + C.
+
 ## Valgrind (Checking Memory Leaks)
 The debug build is configured to support valgrind checks. To perform an
 inspection, use the following command:
