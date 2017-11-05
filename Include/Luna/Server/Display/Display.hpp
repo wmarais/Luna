@@ -148,6 +148,8 @@ namespace Luna
 
       std::atomic_bool fFrontBufReady;
 
+      std::atomic_bool fPageFlipPending;
+
       //------------------------------------------------------------------------
       // The mutex that is used protect the middle buffer pointer when swapped.
       //------------------------------------------------------------------------
@@ -185,6 +187,10 @@ namespace Luna
       // The physical width and the height of the display in mm.
       //------------------------------------------------------------------------
       uint32_t fWidthMM, fHeightMM;
+
+
+      static void pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
+          unsigned int usec, void * data);
 
       //------------------------------------------------------------------------
       // Check if there is a currently configured Encoder and CRT Controller.

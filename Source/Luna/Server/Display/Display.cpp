@@ -378,6 +378,15 @@ void Display::swapBuffers()
   fMidBufReady = true;
 }
 
+void Display::pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
+    unsigned int usec, void * data)
+{
+  Display * display = (Display*)data;
+
+  display->fFrontBufReady = false;
+  display->fPageFlipPending = false;
+}
+
 //==============================================================================
 void Display::render()
 {
@@ -387,7 +396,7 @@ void Display::render()
   while(fRendering)
   {
     // Check if the buffer should be flipped.
-    if(fMidBufReady)
+    if(fMidBufReady && !fFrontBufReady)
     {
       LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
 
@@ -397,39 +406,48 @@ void Display::render()
       // Swap the pointers.
       fFrontBuffer.swap(fMiddleBuffer);
 
+      // Mark the mid buffer as noit ready.
+      fMidBufReady = false;
+
       // Mark the front buffer as ready to be rendered.
       fFrontBufReady = true;
     }
 
     // Check if the front buffer should be rendered.
-    if(fFrontBufReady)
+    if(fFrontBufReady && !fPageFlipPending)
     {
       LUNA_LOG_DEBUG("Flipping page.");
 
-      drmVBlank vbl;
-      vbl.request.type = DRM_VBLANK_RELATIVE;
-      vbl.request.sequence = 1;
+      if(drmModePageFlip(fFD, fCRTCID, fFrontBuffer->id(),
+                      DRM_MODE_PAGE_FLIP_EVENT, this) < 0)
 
-      // Wait for a VBlank event.
-      drmWaitVBlank(fFD, &vbl);
+      {
+        LUNA_LOG_ERROR("Failed to flip page.");
+      }
 
-      // Flip the page.
-      drmModePageFlip(fFD, fCRTCID, fFrontBuffer->id(),
-                      DRM_MODE_PAGE_FLIP_EVENT, nullptr);
+      // Wait for the repaint to complete.
+      fd_set fds;
+      FD_ZERO(&fds);
+      drmEventContext ev;
+      ev.version = 2;
+      ev.page_flip_handler = pageFlipEvent;
 
-      // Mark the front buffer as not ready (don't paint unless we need too).
-      fFrontBufReady = false;
+      // Wait for the render to finish.
+      while(fRendering)
+      {
+        FD_SET(fFD, &fds);
+        if(select(fFD + 1, &fds, nullptr, nullptr, nullptr) > 0)
+        {
+          if(FD_ISSET(fFD, &fds))
+          {
+            drmHandleEvent(fFD, &ev);
+            break;
+          }
+        }
+      }
     }
+    std::this_thread::yield();
   }
-
-  // Wait for a VBlank event so we don't inadvertedly set crtc in the middle of
-  // a page flip.
-  drmVBlank vbl;
-  vbl.request.type = DRM_VBLANK_RELATIVE;
-  vbl.request.sequence = 1;
-
-  LUNA_LOG_DEBUG("Waiting for last vblank event.");
-  drmWaitVBlank(fFD, &vbl);
 }
 
 //==============================================================================
