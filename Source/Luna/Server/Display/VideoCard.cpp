@@ -151,12 +151,12 @@ void VideoCard::renderTest()
     {
       iter->second->fill(i, 0, 0);
 
-      // Swap the bufferws.
+      // Swap the buffers.
       iter->second->swapBuffers();
     }
   }
 
-  // Cycle through red..
+  // Cycle through red.
   for(int i = 0; i < 255; i+=5)
   {
     // Set all the display modes.
@@ -165,12 +165,12 @@ void VideoCard::renderTest()
     {
       iter->second->fill(0, i, 0);
 
-      // Swap the bufferws.
+      // Swap the buffers.
       iter->second->swapBuffers();
     }
   }
 
-  // Cycle through red..
+  // Cycle through blue.
   for(int i = 0; i < 255; i+=5)
   {
     // Set all the display modes.
@@ -179,7 +179,7 @@ void VideoCard::renderTest()
     {
       iter->second->fill(0, 0, i);
 
-      // Swap the bufferws.
+      // Swap the buffers.
       iter->second->swapBuffers();
     }
   }

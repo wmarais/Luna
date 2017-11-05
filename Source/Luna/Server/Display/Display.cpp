@@ -338,20 +338,27 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 {
   LUNA_TRACE_FUNCTION();
   uint8_t * pixels = fBackBuffer->pixels();
-
-  for(uint32_t row = 0; row < fBackBuffer->height(); row++)
+  
+  uint32_t width = fBackBuffer->width();
+  uint32_t height = fBackBuffer->height();
+  uint32_t stride = fBackBuffer->stride();
+  uint32_t bytesPerPixel = fBackBuffer->bpp()/8;
+  
+  LUNA_LOG_DEBUG("Filling Area: " << width << " x " << height << ", Stride: "
+		  << stride << ", Byter Per Pixel: " << bytesPerPixel);
+    
+  for(uint32_t row = 0; row < height; row++)
   {
-    for(uint32_t col = 0; col < fBackBuffer->width(); col++)
+    for(uint32_t col = 0; col < width; col++)
     {
       // Calculate the pixel offset.
-      size_t offset = fBackBuffer->stride() * row + col *
-          (fBackBuffer->bpp()/8);
+      size_t offset = stride * row + col * bytesPerPixel;
 
       // Set the pixel values.
-      pixels[offset] = 0;
-      pixels[offset + 1] = r;
-      pixels[offset + 2] = g;
-      pixels[offset + 3] = b;
+      pixels[offset + 0] = b;
+      pixels[offset + 1] = g;
+      pixels[offset + 2] = r;
+      pixels[offset + 3] = 0;
     }
   }
 }
