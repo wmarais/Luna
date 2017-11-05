@@ -11,7 +11,6 @@ void gLUNA_EarthTerminate(int sig)
   fExecuting = 0;
 }
 
-
 int main(int argc, char * argv[])
 {
   // The exit status.
