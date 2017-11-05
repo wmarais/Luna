@@ -335,11 +335,11 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 
   for(int row = 0; row < fActiveMode.vdisplay; row++)
   {
-    for(int col = 0; col < fActiveMode.hdisplay*3; col += 3)
+    for(int col = 0; col < fActiveMode.hdisplay*4; col += 4)
     {
-      pixel[row * fActiveMode.hdisplay * 3 + col * 3] = r;
-      pixel[row * fActiveMode.hdisplay * 3 + col * 3 + 1] = g;
-      pixel[row * fActiveMode.hdisplay * 3 + col * 3 + 2] = b;
+      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 1] = r;
+      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 2] = g;
+      pixel[row * fActiveMode.hdisplay * 4 + col * 4 + 3] = b;
     }
   }
 }

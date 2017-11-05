@@ -142,14 +142,42 @@ void VideoCard::setModes()
 //==============================================================================
 void VideoCard::renderTest()
 {
-  // Cycle the colours.
-  for(int i = 0; i < 255; i++)
+  // Cycle through red..
+  for(int i = 0; i < 255; i+=5)
   {
     // Set all the display modes.
     for(std::map<int, std::unique_ptr<Display>>::iterator iter =
         fDisplays.begin(); iter != fDisplays.end(); iter++)
     {
-      iter->second->fill(i, i, i);
+      iter->second->fill(i, 0, 0);
+
+      // Swap the bufferws.
+      iter->second->swapBuffers();
+    }
+  }
+
+  // Cycle through red..
+  for(int i = 0; i < 255; i+=5)
+  {
+    // Set all the display modes.
+    for(std::map<int, std::unique_ptr<Display>>::iterator iter =
+        fDisplays.begin(); iter != fDisplays.end(); iter++)
+    {
+      iter->second->fill(0, i, 0);
+
+      // Swap the bufferws.
+      iter->second->swapBuffers();
+    }
+  }
+
+  // Cycle through red..
+  for(int i = 0; i < 255; i+=5)
+  {
+    // Set all the display modes.
+    for(std::map<int, std::unique_ptr<Display>>::iterator iter =
+        fDisplays.begin(); iter != fDisplays.end(); iter++)
+    {
+      iter->second->fill(0, 0, i);
 
       // Swap the bufferws.
       iter->second->swapBuffers();
