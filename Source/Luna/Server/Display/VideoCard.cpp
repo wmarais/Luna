@@ -6,6 +6,8 @@ using namespace Luna::Server;
 //==============================================================================
 VideoCard::VideoCard(const std::string & devNode) : fFD(-1)
 {
+  LUNA_TRACE_FUNCTION();
+
   // Open the video card.
   fFD = open(devNode.c_str(), O_RDWR);
 
@@ -30,7 +32,14 @@ VideoCard::VideoCard(const std::string & devNode) : fFD(-1)
 //==============================================================================
 VideoCard::~VideoCard()
 {
+  LUNA_TRACE_FUNCTION();
 
+  // Close the file descritor.
+  if(fFD >= 0)
+  {
+    close(fFD);
+    fFD = -1;
+  }
 }
 
 //==============================================================================
@@ -145,8 +154,5 @@ void VideoCard::renderTest()
       // Swap the bufferws.
       iter->second->swapBuffers();
     }
-
-    // Sleep for a bit.
-    usleep(20000);
   }
 }

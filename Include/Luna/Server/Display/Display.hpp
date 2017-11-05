@@ -191,12 +191,6 @@ namespace Luna
                                drmModeRes * res);
 
       //------------------------------------------------------------------------
-      // Create the framebuffer.
-      //------------------------------------------------------------------------
-      void createBuffer(int fd, const drmModeModeInfo & mode, uint32_t bpp,
-                        std::unique_ptr<FrameBuffer> & fb);
-
-      //------------------------------------------------------------------------
       // Determine the best Mode to run the display at. If the user explicitly
       // specified it in the settings for the display, then that will be use,
       // otherwise the highest refresh and screen area will be selected.

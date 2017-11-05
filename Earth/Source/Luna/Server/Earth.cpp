@@ -39,6 +39,9 @@ void Earth::stopInput()
 //==============================================================================
 void Earth::run(int argc, char * argv[])
 {
+  LUNA_UNUSED_PARAM(argc);
+  LUNA_UNUSED_PARAM(argv);
+
   // Parse the settings file.
   LUNA_LOG_INFO("Parsing settings: " << kSettingFilePath);
   fSettings = std::make_shared<Settings>(kSettingFilePath);

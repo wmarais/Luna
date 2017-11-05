@@ -13,12 +13,14 @@ Keyboard::~Keyboard() {}
 //==============================================================================
 void Keyboard::monitor(std::shared_ptr<SessionManager> sm)
 {
+  LUNA_UNUSED_PARAM(sm);
+
   // Open the keyboard.
   int fd;
   struct input_event ie;
 
   // The latest event.
-  Event event;
+//  Event event;
 
   // Open the keyboard file.
   if((fd = open(fPath.c_str(), O_RDONLY)) == -1)
@@ -37,11 +39,11 @@ void Keyboard::monitor(std::shared_ptr<SessionManager> sm)
       throw "Failed to read from keyboard.";
     }
 
-    // Record the time stamp.
+/*    // Record the time stamp.
     event.fTimeStamp = ie.time.tv_usec;
 
     // Record the keyboard
-    event.fData.fKeyCode = ie.code;
+    event.fData.fKeyCode = ie.code; */
 
     // Yield the thread to give other task time to work.
     std::this_thread::yield();

@@ -7,6 +7,7 @@ volatile sig_atomic_t fExecuting = 1;
 
 void gLUNA_EarthTerminate(int sig)
 {
+  LUNA_UNUSED_PARAM(sig);
   fExecuting = 0;
 }
 

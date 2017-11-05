@@ -7,6 +7,8 @@ using namespace Luna::Server;
 InputManager::InputManager(const Settings * settings)
   /*: fUDEV(udev_new(), udev_unref)*/
 { 
+  LUNA_UNUSED_PARAM(settings);
+
   /*// Validate the settings parameter.
   assert(settings && "Settings object is null.");
 
@@ -24,6 +26,8 @@ InputManager::InputManager(const Settings * settings)
 std::vector<std::string> InputManager::scanDevNodes(const char * subSystem,
                                                  const char * property)
 {
+  LUNA_UNUSED_PARAM(subSystem);
+  LUNA_UNUSED_PARAM(property);
   // The list of dev nodes.
   std::vector<std::string> devNodes;
 
@@ -209,19 +213,19 @@ void InputManager::startInputMonitor(std::shared_ptr<SessionManager> sm)
 //==============================================================================
 void InputManager::startHotplugMonitor(std::shared_ptr<SessionManager> sm)
 {
-
+  LUNA_UNUSED_PARAM(sm);
 }
 
 //==============================================================================
 void InputManager::addDevice(std::string devNode)
 {
-
+  LUNA_UNUSED_PARAM(devNode);
 }
 
 //==============================================================================
 void InputManager::removeDevice(std::string devNode)
 {
-
+  LUNA_UNUSED_PARAM(devNode);
 }
 
 //==============================================================================
@@ -229,6 +233,9 @@ void InputManager::hotplugged(const std::string & devNode,
                               UDEV::InputDeviceTypes devType,
                               UDEV::DeviceActions action)
 {
+  LUNA_UNUSED_PARAM(devNode);
+  LUNA_UNUSED_PARAM(devType);
+  LUNA_UNUSED_PARAM(action);
   //LUNA_LOG_INFO("Managing device: " << devNode);
 }
 

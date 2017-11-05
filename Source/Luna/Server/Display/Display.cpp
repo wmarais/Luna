@@ -17,6 +17,16 @@ Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
 Display::~Display()
 {
   LUNA_TRACE_FUNCTION();
+
+  // Check if the rendering thread is running.
+  if(fRendering)
+  {
+    // Tell the thread to stop.
+    fRendering = false;
+
+    // Wait for the thread to join.
+    fRenderThread->join();
+  }
 }
 
 //==============================================================================
@@ -72,13 +82,16 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
 
   // Setup the buffers.
   LUNA_LOG_DEBUG("Creating front buffer.");
-  createBuffer(fd, fActiveMode, 32, fFrontBuffer);
+  fFrontBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
+                                               fActiveMode.vdisplay, 32);
 
   LUNA_LOG_DEBUG("Creating middle buffer.");
-  createBuffer(fd, fActiveMode, 32, fMiddleBuffer);
+  fMiddleBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
+                                                fActiveMode.vdisplay, 32);
 
   LUNA_LOG_DEBUG("Creating back buffer.");
-  createBuffer(fd, fActiveMode, 32, fBackBuffer);
+  fBackBuffer = std::make_unique<FrameBuffer>(fd, fActiveMode.hdisplay,
+                                              fActiveMode.vdisplay, 32);
 }
 //==============================================================================
 bool Display::isEncoderAndCRTCValid(int fd, drmModeConnector * conn)
@@ -215,15 +228,6 @@ void Display::setupEncoderAndCRTC(int fd, drmModeConnector * conn,
 }
 
 //==============================================================================
-void Display::createBuffer(int fd, const drmModeModeInfo &mode, uint32_t bpp,
-                           std::unique_ptr<FrameBuffer> & fb)
-{
-  LUNA_TRACE_FUNCTION();
-
-  fb = std::make_unique<FrameBuffer>(fd, mode.hdisplay, mode.vdisplay, bpp);
-}
-
-//==============================================================================
 uint32_t Display::physicalWidth() const
 {
   LUNA_TRACE_FUNCTION();
@@ -316,6 +320,9 @@ void Display::setMode(int fd/*, drmModeConnector * conn*/)
 drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
   uint32_t numModes, const Settings * settings)
 {
+  LUNA_UNUSED_PARAM(numModes);
+  LUNA_UNUSED_PARAM(settings);
+
   // TODO - Implement this.
   return modes[0];
 }
@@ -323,13 +330,16 @@ drmModeModeInfo Display::getBestMode(drmModeModeInfoPtr modes,
 //==============================================================================
 void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 {
-  for(int r = 0; r < fActiveMode.vdisplay; r++)
+  LUNA_TRACE_FUNCTION();
+  uint8_t * pixel = fBackBuffer->pixels();
+
+  for(int row = 0; row < fActiveMode.vdisplay; row++)
   {
-    for(int c = 0; c < fActiveMode.hdisplay*3; c+3)
+    for(int col = 0; col < fActiveMode.hdisplay*3; col += 3)
     {
-      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3] = r;
-      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3 + 1] = g;
-      fBackBuffer->pixels()[r * fActiveMode.hdisplay * 3 + c * 3 + 2] = b;
+      pixel[row * fActiveMode.hdisplay * 3 + col * 3] = r;
+      pixel[row * fActiveMode.hdisplay * 3 + col * 3 + 1] = g;
+      pixel[row * fActiveMode.hdisplay * 3 + col * 3 + 2] = b;
     }
   }
 }
@@ -360,6 +370,8 @@ void Display::render()
     // Check if the buffer should be flipped.
     if(fMidBufReady)
     {
+      LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
+
       // Lock the protection mutex.
       std::lock_guard<std::mutex> lock(fMidBuffLock);
 
@@ -373,6 +385,8 @@ void Display::render()
     // Check if the front buffer should be rendered.
     if(fFrontBufReady)
     {
+      LUNA_LOG_DEBUG("Flipping page.");
+
       drmVBlank vbl;
       vbl.request.type = DRM_VBLANK_RELATIVE;
       vbl.request.sequence = 1;

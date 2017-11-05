@@ -6,6 +6,7 @@ using namespace Luna::Server;
 Joystick::Joystick(std::string path)
 {
   // Open the controller.
+  LUNA_UNUSED_PARAM(path);
 }
 
 //==============================================================================
@@ -17,6 +18,7 @@ Joystick::~Joystick()
 //==============================================================================
 void Joystick::monitor(std::shared_ptr<SessionManager> sm)
 {
+  LUNA_UNUSED_PARAM(sm);
   // Keep looping until stop() is called.
   while(isRunning())
   {
