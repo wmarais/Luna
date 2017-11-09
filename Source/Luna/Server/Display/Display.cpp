@@ -9,9 +9,8 @@ const uint32_t Display::kBitsPerPixel = 32;
 const uint32_t Display::kColourDepth = 24;
 
 //==============================================================================
-Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
-  fRendering(false), fMidBufReady(false), fFrontBufReady(false),
-  fSavedCRTC(nullptr, nullptr)
+Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0),
+  fMidBufReady(false), fFrontBufReady(false), fSavedCRTC(nullptr, nullptr)
 {
   LUNA_TRACE_FUNCTION();
 }
@@ -20,16 +19,6 @@ Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0), fFD(fd),
 Display::~Display()
 {
   LUNA_TRACE_FUNCTION();
-
-  // Check if the rendering thread is running.
-  if(fRendering)
-  {
-    // Tell the thread to stop.
-    fRendering = false;
-
-    // Wait for the thread to join.
-    fRenderThread->join();
-  }
 }
 
 //==============================================================================
@@ -44,9 +33,6 @@ void Display::configure(int fd, drmModeConnector * conn, drmModeRes * res,
                         const Settings * settings)
 {
   LUNA_TRACE_FUNCTION();
-
-  // Make sure the rendering is disabled.
-  stopRendering();
 
   LUNA_LOG_DEBUG("Current connector id: " << fConnectorID << " new id: " <<
                  conn->connector_id << ".");
@@ -314,9 +300,6 @@ void Display::setMode(int fd/*, drmModeConnector * conn*/)
   {
     LUNA_THROW_RUNTIME_ERROR("Failed to change CRTC mode.");
   }
-
-  LUNA_LOG_DEBUG("Starting the rendering thread.");
-  startRendering();
 }
 
 //==============================================================================
@@ -364,6 +347,51 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 }
 
 //==============================================================================
+void Display::render(int fd)
+{
+  // Check if the mid and front buffers should be swapped.
+  if(fMidBufReady && !fFrontBufReady)
+  {
+    LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
+
+    // Lock the protection mutex.
+    std::lock_guard<std::mutex> lock(fMidBuffLock);
+
+    // Swap the pointers.
+    fFrontBuffer.swap(fMiddleBuffer);
+
+    // Mark the mid buffer as not ready.
+    fMidBufReady = false;
+
+    // Mark the front buffer as ready to be rendered.
+    fFrontBufReady = true;
+  }
+
+  // Check if the front buffer should be flipped.
+  if(fFrontBufReady && !fPageFlipPending)
+  {
+    LUNA_LOG_DEBUG("Flipping page.");
+
+    if(drmModePageFlip(fd, fCRTCID, fFrontBuffer->id(),
+                    DRM_MODE_PAGE_FLIP_EVENT, this) < 0)
+
+    {
+      LUNA_THROW_RUNTIME_ERROR("Failed to flip page.");
+    }
+  }
+}
+
+//==============================================================================
+void Display::pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
+    unsigned int usec, void * data)
+{
+  Display * display = (Display*)data;
+
+  display->fFrontBufReady = false;
+  display->fPageFlipPending = false;
+}
+
+//==============================================================================
 void Display::swapBuffers()
 {
   LUNA_TRACE_FUNCTION();
@@ -376,120 +404,6 @@ void Display::swapBuffers()
 
   // Indicate that a new frame is available.
   fMidBufReady = true;
-}
-
-void Display::pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
-    unsigned int usec, void * data)
-{
-  Display * display = (Display*)data;
-
-  display->fFrontBufReady = false;
-  display->fPageFlipPending = false;
-}
-
-//==============================================================================
-void Display::render()
-{
-  LUNA_TRACE_FUNCTION();
-
-  // Keep looping till stopRendering() is called.
-  while(fRendering)
-  {
-    // Check if the buffer should be flipped.
-    if(fMidBufReady && !fFrontBufReady)
-    {
-      LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
-
-      // Lock the protection mutex.
-      std::lock_guard<std::mutex> lock(fMidBuffLock);
-
-      // Swap the pointers.
-      fFrontBuffer.swap(fMiddleBuffer);
-
-      // Mark the mid buffer as noit ready.
-      fMidBufReady = false;
-
-      // Mark the front buffer as ready to be rendered.
-      fFrontBufReady = true;
-    }
-
-    // Check if the front buffer should be rendered.
-    if(fFrontBufReady && !fPageFlipPending)
-    {
-      LUNA_LOG_DEBUG("Flipping page.");
-
-      if(drmModePageFlip(fFD, fCRTCID, fFrontBuffer->id(),
-                      DRM_MODE_PAGE_FLIP_EVENT, this) < 0)
-
-      {
-        LUNA_LOG_ERROR("Failed to flip page.");
-      }
-
-      // Wait for the repaint to complete.
-      fd_set fds;
-      FD_ZERO(&fds);
-      drmEventContext ev;
-      ev.version = 2;
-      ev.page_flip_handler = pageFlipEvent;
-
-      // Wait for the render to finish.
-      while(fRendering)
-      {
-        FD_SET(fFD, &fds);
-        if(select(fFD + 1, &fds, nullptr, nullptr, nullptr) > 0)
-        {
-          if(FD_ISSET(fFD, &fds))
-          {
-            drmHandleEvent(fFD, &ev);
-            break;
-          }
-        }
-      }
-    }
-    std::this_thread::yield();
-  }
-}
-
-//==============================================================================
-void Display::startRendering()
-{
-  LUNA_TRACE_FUNCTION();
-
-  // Dont start it again if it's allready rederning.
-  if(!fRendering)
-  {
-    LUNA_LOG_DEBUG("Starting render thread.");
-    // Set the rendering flag before starting the thread.
-    fRendering = true;
-
-    // Create the thread.
-    fRenderThread = std::make_unique<std::thread>(&Display::render, this);
-  }
-  else
-  {
-    LUNA_LOG_DEBUG("Rendering thread allready running.");
-  }
-}
-
-//==============================================================================
-void Display::stopRendering()
-{
-  LUNA_TRACE_FUNCTION();
-
-  if(fRenderThread)
-  {
-    LUNA_LOG_DEBUG("Stopping rendering thread.");
-
-    // Set rendering to false.
-    fRendering = false;
-
-    // wait for the thread to join.
-    fRenderThread->join();
-  }
-  else
-  {
-    LUNA_LOG_DEBUG("Rendering thread allready stopped.");
-  }
 }
 
 //##############################################################################

@@ -4,7 +4,7 @@ using namespace Luna::Common;
 using namespace Luna::Server;
 
 //==============================================================================
-VideoCard::VideoCard(const std::string & devNode) : fFD(-1)
+VideoCard::VideoCard(const std::string & devNode) : fFD(-1), fRendering(false)
 {
   LUNA_TRACE_FUNCTION();
 
@@ -34,6 +34,16 @@ VideoCard::~VideoCard()
 {
   LUNA_TRACE_FUNCTION();
 
+  // Check if the rendering thread is running.
+  if(fRendering)
+  {
+    // Tell the thread to stop.
+    fRendering = false;
+
+    // Wait for the thread to join.
+    fRenderThread->join();
+  }
+
   // Close the file descritor.
   if(fFD >= 0)
   {
@@ -43,9 +53,100 @@ VideoCard::~VideoCard()
 }
 
 //==============================================================================
+void VideoCard::startRendering()
+{
+  LUNA_TRACE_FUNCTION();
+
+  // Dont start it again if it's allready rederning.
+  if(!fRendering)
+  {
+    LUNA_LOG_DEBUG("Starting render thread.");
+    // Set the rendering flag before starting the thread.
+    fRendering = true;
+
+    // Create the thread.
+    fRenderThread = std::make_unique<std::thread>(&VideoCard::render, this);
+  }
+  else
+  {
+    LUNA_LOG_DEBUG("Rendering thread allready running.");
+  }
+}
+
+//==============================================================================
+void VideoCard::stopRendering()
+{
+  LUNA_TRACE_FUNCTION();
+
+  if(fRenderThread)
+  {
+    LUNA_LOG_DEBUG("Stopping rendering thread.");
+
+    // Set rendering to false.
+    fRendering = false;
+
+    // wait for the thread to join.
+    fRenderThread->join();
+  }
+  else
+  {
+    LUNA_LOG_DEBUG("Rendering thread allready stopped.");
+  }
+}
+
+//==============================================================================
+void VideoCard::render()
+{
+  LUNA_TRACE_FUNCTION();
+
+  // Set the file descriptor to monitor.
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(fFD, &fds);
+
+  // Setup the event structure.
+  drmEventContext drmEvent;
+  memset(&drmEvent, 0, sizeof(drmEvent));
+  drmEvent.version = 2;
+  drmEvent.page_flip_handler = Display::pageFlipEvent;
+
+  // Setup the timeout structure. Clear all the fields to let the select()
+  // function time out immediately.
+  struct timeval timeOut;
+  memset(&timeOut, 0, sizeof(timeOut));
+
+  // Keep looping till stopRendering() is called.
+  while(fRendering)
+  {
+    // Render each display.
+    for(auto & display : fDisplays)
+    {
+      // Render the display.
+      display.second->render(fFD);
+    }
+
+    // Check if any vblanmk events occured.
+    if(select(fFD+1, &fds, nullptr, nullptr, &timeOut))
+    {
+      // Check if the event bit is set.
+      if(FD_ISSET(fFD, &fds))
+      {
+        drmHandleEvent(fFD, &drmEvent);
+      }
+    }
+
+    // Yield the thread so as not to hog the CPU.
+    std::this_thread::yield();
+  }
+}
+
+//==============================================================================
 void VideoCard::configure(const Settings * settings)
 {
   LUNA_TRACE_FUNCTION();
+
+  LUNA_LOG_DEBUG("Stopping the rendering thread.");
+  stopRendering();
 
   LUNA_LOG_DEBUG("Retrieving DRM resources.");
   std::unique_ptr<drmModeRes, decltype(&drmModeFreeResources)>
@@ -126,6 +227,9 @@ void VideoCard::configure(const Settings * settings)
 
   // Set all the modes.
   setModes();
+
+  LUNA_LOG_DEBUG("Starting the rendering thread.");
+  startRendering();
 }
 
 //==============================================================================

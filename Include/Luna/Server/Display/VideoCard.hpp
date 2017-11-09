@@ -20,6 +20,36 @@ namespace Luna
       //------------------------------------------------------------------------
       std::map<int, std::unique_ptr<Display>> fDisplays;
 
+      //------------------------------------------------------------------------
+      // The thread used for rendering the framebuffer to the screen.
+      //------------------------------------------------------------------------
+      std::unique_ptr<std::thread> fRenderThread;
+
+      //------------------------------------------------------------------------
+      // The flag to keep track of whether the rendering loop is running.
+      //------------------------------------------------------------------------
+      std::atomic_bool fRendering;
+
+      //------------------------------------------------------------------------
+      // Start rendering to the displays.
+      //------------------------------------------------------------------------
+      void startRendering();
+
+      //------------------------------------------------------------------------
+      // Stop rendering to the attached displays.
+      //------------------------------------------------------------------------
+      void stopRendering();
+
+      //------------------------------------------------------------------------
+      // The rendering thread's function.
+      //------------------------------------------------------------------------
+      void render();
+
+      //------------------------------------------------------------------------
+      // Set the the video modes.
+      //------------------------------------------------------------------------
+      void setModes();
+
     public:
       VideoCard(const std::string & devNode);
       ~VideoCard();
@@ -29,8 +59,6 @@ namespace Luna
       // attached displays. Can be called at any time
       //------------------------------------------------------------------------
       void configure(const Luna::Common::Settings * settings);
-
-      void setModes();
 
       void renderTest();
     };

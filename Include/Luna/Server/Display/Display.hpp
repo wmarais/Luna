@@ -74,6 +74,14 @@ namespace Luna
       //------------------------------------------------------------------------
       void fill(uint8_t r, uint8_t g, uint8_t b);
 
+      void render(int fd);
+
+      //------------------------------------------------------------------------
+      // Function that is invoked when the
+      //------------------------------------------------------------------------
+      static void pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
+          unsigned int usec, void * data);
+
     private:
       class DumbBuffer
       {
@@ -128,17 +136,9 @@ namespace Luna
 
       uint32_t fCRTCID;
 
-      int fFD;
+      //int fFD;
 
-      //------------------------------------------------------------------------
-      // The thread used for rendering the framebuffer to the screen.
-      //------------------------------------------------------------------------
-      std::unique_ptr<std::thread> fRenderThread;
 
-      //------------------------------------------------------------------------
-      //
-      //------------------------------------------------------------------------
-      std::atomic_bool fRendering;
 
       //------------------------------------------------------------------------
       // Flag indicating if the middle buffer has been updated and should be
@@ -189,9 +189,6 @@ namespace Luna
       uint32_t fWidthMM, fHeightMM;
 
 
-      static void pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
-          unsigned int usec, void * data);
-
       //------------------------------------------------------------------------
       // Check if there is a currently configured Encoder and CRT Controller.
       //------------------------------------------------------------------------
@@ -212,22 +209,6 @@ namespace Luna
       drmModeModeInfo getBestMode(drmModeModeInfoPtr modes, uint32_t numModes,
                                   const Common::Settings *settings);
 
-      //------------------------------------------------------------------------
-      //
-      //------------------------------------------------------------------------
-      void render();
-
-      //------------------------------------------------------------------------
-      // Start the rendering thread that renders the buffers to the screen. This
-      // must always be called before something will be rendered to the screen.
-      //------------------------------------------------------------------------
-      void startRendering();
-
-      //------------------------------------------------------------------------
-      // Stop the rendering thread. This must always be called before chaning
-      // the configuration.
-      //------------------------------------------------------------------------
-      void stopRendering();
     };
   }
 }
