@@ -11,8 +11,12 @@
   Luna::Common::Log::ptr()->write(ss.str());\
 }
 
-
+#ifdef LUNA_DEBUG
 #define LUNA_LOG_DEBUG(msg) LUNA_LOG_MSG("DEBUG", msg)
+#else
+#define LUNA_LOG_DEBUG
+#endif
+
 #define LUNA_LOG_INFO(msg) LUNA_LOG_MSG("INFO", msg)
 #define LUNA_LOG_WARN(msg) LUNA_LOG_MSG("WARN", msg)
 #define LUNA_LOG_ERROR(msg) LUNA_LOG_MSG("ERROR", msg)

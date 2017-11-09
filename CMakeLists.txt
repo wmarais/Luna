@@ -45,6 +45,14 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 ################################################################################
+# Check the build type.
+################################################################################
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  add_definitions(-DLUNA_DEBUG)
+endif()
+
+
+################################################################################
 # Common code shared between client and server.
 ################################################################################
 set(LunaCommon_HEADERS
