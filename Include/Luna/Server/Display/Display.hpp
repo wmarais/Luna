@@ -74,7 +74,7 @@ namespace Luna
       //------------------------------------------------------------------------
       void fill(uint8_t r, uint8_t g, uint8_t b);
 
-      void render(int fd);
+      bool render(int fd);
 
       //------------------------------------------------------------------------
       // Function that is invoked when the

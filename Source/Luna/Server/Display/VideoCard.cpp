@@ -121,28 +121,33 @@ void VideoCard::render()
   // Keep looping till stopRendering() is called.
   while(fRendering)
   {
+    bool pageFlipPending = false;
     LUNA_LOG_DEBUG("Rendering displays.");
     // Render each display.
     for(auto & display : fDisplays)
     {
       // Render the display.
-      display.second->render(fFD);
+      pageFlipPending |= display.second->render(fFD);
     }
     
-    // Check if any vblank events occured.
-    int ret = select(fFD+1, &fds, nullptr, nullptr, nullptr); //&timeOut);
+    if(pageFlipPending)
+    {
+      FD_SET(fFD, &fds);
+      // Check if any vblank events occured.
+      int ret = select(fFD+1, &fds, nullptr, nullptr, &timeOut);
 
-    if(ret < 0)
-    {
-      LUNA_LOG_FATAL_ERROR("select() failed because: " << strerror(errno));
-      //exit(-1);
-    }
-    else if(FD_ISSET(fFD, &fds))
-    {
-      if(drmHandleEvent(fFD, &drmEvent) < 0)
+      if(ret < 0)
       {
-        LUNA_LOG_FATAL_ERROR("drmHandleEvent() failed because: " << strerror(errno));
-        exit(-1);
+        LUNA_LOG_FATAL_ERROR("select() failed because: " << strerror(errno));
+        //exit(-1);
+      }
+      else if(FD_ISSET(fFD, &fds))
+      {
+        if(drmHandleEvent(fFD, &drmEvent) < 0)
+        {
+          LUNA_LOG_FATAL_ERROR("drmHandleEvent() failed because: " << strerror(errno));
+          exit(-1);
+        }
       }
     }
 

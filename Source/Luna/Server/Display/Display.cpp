@@ -348,8 +348,11 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 }
 
 //==============================================================================
-void Display::render(int fd)
+bool Display::render(int fd)
 {
+  LUNA_LOG_DEBUG("PageFlipPending: " << fPageFlipPending << ", fMidBufReady: "
+      << fMidBufReady << ", FrontBufReady: " << fFrontBufReady);
+
   // Wait for a Page Flip to complete before flipping another frame.
   if(!fPageFlipPending)
   {
@@ -386,6 +389,7 @@ void Display::render(int fd)
       }
     }
   }
+  return fPageFlipPending;
 }
 
 //==============================================================================
