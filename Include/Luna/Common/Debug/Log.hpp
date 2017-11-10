@@ -4,8 +4,8 @@
 #define LUNA_LOG_MSG(lvl, msg) \
 {\
   std::string file(__FILE__); \
-  size_t i = file.rfind('/', file.length());\
-  if (i != std::string::npos) file = file.substr(i+1, file.length() - i);\
+  size_t I = file.rfind('/', file.length());\
+  if (I != std::string::npos) file = file.substr(I+1, file.length() - I);\
   std::stringstream ss; ss << lvl << " | " << file << " | " << \
     __FUNCTION__ << " | " << __LINE__ << " | " << msg;\
   Luna::Common::Log::ptr()->write(ss.str());\

@@ -5,6 +5,9 @@ using namespace Luna::Server;
 
 volatile sig_atomic_t fExecuting = 1;
 
+#define STRINGIZE_(x) #x
+#define STRINGIZE(x) STRINGIZE_(x)
+
 void gLUNA_EarthTerminate(int sig)
 {
   LUNA_UNUSED_PARAM(sig);
@@ -13,6 +16,10 @@ void gLUNA_EarthTerminate(int sig)
 
 int main(int argc, char * argv[])
 {
+
+  std::cout << STRINGIZE(LUNA_LOG_DEBUG) << std::endl;
+  std::cout << STRINGIZE(LUNA_LOG_MSG) << std::endl;
+
   // The exit status.
   int status = EXIT_SUCCESS;
 

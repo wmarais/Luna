@@ -350,6 +350,7 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 //==============================================================================
 void Display::render(int fd)
 {
+  // Wait for a Page Flip to complete before flipping another frame.
   if(!fPageFlipPending)
   {
     // Check if the mid and front buffers should be swapped.
@@ -374,6 +375,7 @@ void Display::render(int fd)
     if(fFrontBufReady)
     {
       LUNA_LOG_DEBUG("Flipping page.");
+      fPageFlipPending = true;
 
       // Flip the page.
       if(drmModePageFlip(fd, fCRTCID, fFrontBuffer->id(),

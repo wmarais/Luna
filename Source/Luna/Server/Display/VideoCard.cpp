@@ -130,12 +130,12 @@ void VideoCard::render()
     }
     
     // Check if any vblank events occured.
-    int ret = select(fFD+1, &fds, nullptr, nullptr, nullptr);
+    int ret = select(fFD+1, &fds, nullptr, nullptr, nullptr); //&timeOut);
 
     if(ret < 0)
     {
       LUNA_LOG_FATAL_ERROR("select() failed because: " << strerror(errno));
-      exit(-1);
+      //exit(-1);
     }
     else if(FD_ISSET(fFD, &fds))
     {
@@ -174,7 +174,7 @@ void VideoCard::configure(const Settings * settings)
   }
 
   LUNA_LOG_DEBUG("Iterating through all the connectors.");
-  for(int i = 0; i < resources->count_connectors; ++i)
+  for(int i = 0; i < resources->count_connectors; i++)
   {
     LUNA_LOG_DEBUG("Retrieving connector " << i << " information.");
     std::unique_ptr<drmModeConnector, decltype(&drmModeFreeConnector)>
@@ -227,12 +227,15 @@ void VideoCard::configure(const Settings * settings)
       // not be fatal, however we should warn the user of this strange behavior.
       LUNA_LOG_WARN("The display attached to connector " << i << " has no " <<
                     "valid modes.");
+
+      // Continue parsing the next connector.
+      continue;
     }
 
     // Create the display.
     std::unique_ptr<Display> display = std::make_unique<Display>(fFD);
 
-    // COnfigure the display.
+    // Configure the display.
     display->configure(fFD, connector.get(), resources.get(), settings);
 
     // Add it to the list of displays.
@@ -260,7 +263,7 @@ void VideoCard::setModes()
 //==============================================================================
 void VideoCard::renderTest()
 {
-  // Cycle through red..
+  // Cycle through red.
   for(int i = 0; i < 255; i+=5)
   {
     // Set all the display modes.
@@ -274,7 +277,7 @@ void VideoCard::renderTest()
     }
   }
 
-  // Cycle through red.
+  // Cycle through green.
   for(int i = 0; i < 255; i+=5)
   {
     // Set all the display modes.
