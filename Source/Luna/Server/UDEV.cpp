@@ -391,12 +391,18 @@ void UDEV::processDevice(struct udev_device * dev, InputManager * im,
       // It is a display device.
       case kDRMSubSystem:
       {
-        LUNA_LOG_INFO("Scan detected (" << kSubSystemNames[subSys] << "): " <<
-                      devNode << " with action: " << kDeviceActionStrs[action]
-                      << ".");
+        // Check if the devNode is a video card.
+        std::regex pattern("/dev/dri/card([0-9]{1,2}[0]?|100)");
 
-        // Tell the display manager to manage the device.
-        dm->changed(devNode, action);
+        if(std::regex_match(devNode, pattern))
+        {
+          LUNA_LOG_INFO("Scan detected (" << kSubSystemNames[subSys] << "): " <<
+                        devNode << " with action: " << kDeviceActionStrs[action]
+                        << ".");
+
+          // Tell the display manager to manage the device.
+          dm->changed(devNode, action);
+        }
       }
       break;
 

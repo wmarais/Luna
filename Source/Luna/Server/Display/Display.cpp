@@ -10,7 +10,8 @@ const uint32_t Display::kColourDepth = 24;
 
 //==============================================================================
 Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0),
-  fMidBufReady(false), fFrontBufReady(false), fSavedCRTC(nullptr, nullptr)
+  fMidBufReady(false), fFrontBufReady(false), fSavedCRTC(nullptr, nullptr),
+  fPageFlipPending(false)
 {
   LUNA_TRACE_FUNCTION();
 }
@@ -327,8 +328,8 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
   uint32_t stride = fBackBuffer->stride();
   uint32_t bytesPerPixel = fBackBuffer->bpp()/8;
   
-  LUNA_LOG_DEBUG("Filling Area: " << width << " x " << height << ", Stride: "
-		  << stride << ", Byter Per Pixel: " << bytesPerPixel);
+  //LUNA_LOG_DEBUG("Filling Area: " << width << " x " << height << ", Stride: "
+//		  << stride << ", Byter Per Pixel: " << bytesPerPixel);
     
   for(uint32_t row = 0; row < height; row++)
   {
@@ -349,34 +350,38 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 //==============================================================================
 void Display::render(int fd)
 {
-  // Check if the mid and front buffers should be swapped.
-  if(fMidBufReady && !fFrontBufReady)
+  if(!fPageFlipPending)
   {
-    LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
-
-    // Lock the protection mutex.
-    std::lock_guard<std::mutex> lock(fMidBuffLock);
-
-    // Swap the pointers.
-    fFrontBuffer.swap(fMiddleBuffer);
-
-    // Mark the mid buffer as not ready.
-    fMidBufReady = false;
-
-    // Mark the front buffer as ready to be rendered.
-    fFrontBufReady = true;
-  }
-
-  // Check if the front buffer should be flipped.
-  if(fFrontBufReady && !fPageFlipPending)
-  {
-    LUNA_LOG_DEBUG("Flipping page.");
-
-    if(drmModePageFlip(fd, fCRTCID, fFrontBuffer->id(),
-                    DRM_MODE_PAGE_FLIP_EVENT, this) < 0)
-
+    // Check if the mid and front buffers should be swapped.
+    if(fMidBufReady && !fFrontBufReady)
     {
-      LUNA_THROW_RUNTIME_ERROR("Failed to flip page.");
+      LUNA_LOG_DEBUG("Swapping Front <-> Middle buffers.");
+
+      // Lock the protection mutex.
+      std::lock_guard<std::mutex> lock(fMidBuffLock);
+
+      // Swap the pointers.
+      fFrontBuffer.swap(fMiddleBuffer);
+
+      // Mark the mid buffer as not ready.
+      fMidBufReady = false;
+
+      // Mark the front buffer as ready to be rendered.
+      fFrontBufReady = true;
+    }
+
+    // Check if the front buffer should be flipped.
+    if(fFrontBufReady)
+    {
+      LUNA_LOG_DEBUG("Flipping page.");
+
+      // Flip the page.
+      if(drmModePageFlip(fd, fCRTCID, fFrontBuffer->id(),
+                    DRM_MODE_PAGE_FLIP_EVENT, this) != 0)
+      {
+        fPageFlipPending = false;
+        LUNA_LOG_ERROR("Failed to flip page because: " << strerror(errno));
+      }
     }
   }
 }
@@ -385,6 +390,7 @@ void Display::render(int fd)
 void Display::pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
     unsigned int usec, void * data)
 {
+  LUNA_LOG_DEBUG("Page Flip Event.");
   Display * display = (Display*)data;
 
   display->fFrontBufReady = false;

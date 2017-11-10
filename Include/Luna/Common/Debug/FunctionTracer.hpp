@@ -3,7 +3,9 @@
 
 #ifdef LUNA_DEBUG
 
-#define LUNA_TRACE_FUNCTION() Luna::Common::FunctionTracer luna_tracer(\
+#define LUNA_TRACE_FUNCTION()
+
+//#define LUNA_TRACE_FUNCTION() Luna::Common::FunctionTracer luna_tracer(\
   __FILE__, __FUNCTION__ , __LINE__)
 
 namespace Luna

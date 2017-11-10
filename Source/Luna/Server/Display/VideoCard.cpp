@@ -114,30 +114,44 @@ void VideoCard::render()
   // function time out immediately.
   struct timeval timeOut;
   memset(&timeOut, 0, sizeof(timeOut));
+  
+
+  LUNA_LOG_DEBUG("Entering render loop.");
 
   // Keep looping till stopRendering() is called.
   while(fRendering)
   {
+    LUNA_LOG_DEBUG("Rendering displays.");
     // Render each display.
     for(auto & display : fDisplays)
     {
       // Render the display.
       display.second->render(fFD);
     }
+    
+    // Check if any vblank events occured.
+    int ret = select(fFD+1, &fds, nullptr, nullptr, nullptr);
 
-    // Check if any vblanmk events occured.
-    if(select(fFD+1, &fds, nullptr, nullptr, &timeOut))
+    if(ret < 0)
     {
-      // Check if the event bit is set.
-      if(FD_ISSET(fFD, &fds))
+      LUNA_LOG_FATAL_ERROR("select() failed because: " << strerror(errno));
+      exit(-1);
+    }
+    else if(FD_ISSET(fFD, &fds))
+    {
+      if(drmHandleEvent(fFD, &drmEvent) < 0)
       {
-        drmHandleEvent(fFD, &drmEvent);
+        LUNA_LOG_FATAL_ERROR("drmHandleEvent() failed because: " << strerror(errno));
+        exit(-1);
       }
     }
 
     // Yield the thread so as not to hog the CPU.
     std::this_thread::yield();
   }
+
+  LUNA_LOG_DEBUG("Exiting render loop.");
+
 }
 
 //==============================================================================

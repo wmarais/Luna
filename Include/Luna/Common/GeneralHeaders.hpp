@@ -15,6 +15,7 @@
 #include <cassert>
 #include <algorithm>
 #include <queue>
+#include <regex>
 
 #include <uuid/uuid.h>
 #include <libconfig.h++>
