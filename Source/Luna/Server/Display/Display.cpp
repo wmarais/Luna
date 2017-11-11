@@ -170,7 +170,6 @@ void Display::setupEncoderAndCRTC(int fd, drmModeConnector * conn,
         fEncoderID = conn->encoder_id;
         fCRTCID = encoder->crtc_id;
 
-
         LUNA_LOG_DEBUG("The encoder (" << fEncoderID << ") and crtc (" <<
                        fCRTCID << ") pair is suitable.");
 

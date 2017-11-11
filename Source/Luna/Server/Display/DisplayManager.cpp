@@ -19,34 +19,23 @@ void DisplayManager::changed(const std::string & devNode,
     // Check if the device is already in the list.
     if(iter != fVideoCards.end())
     {
-      // Check if the device has been removed.
-      if(action == UDEV::kRemoveDevice)
-      {
-        // Remove the device from the list.
-        fVideoCards.erase(iter);
-      }
-      // Check if the device changed.
-      else if(action == UDEV::kChangeDevice)
-      {
-        // Reconfigure the displays.
-        iter->second->configure(fSettings.get());
-      }
+      // Delete the device. It seems that some DRM resources are no updated
+      // properly and it is best to close the file and re-open it.
+      fVideoCards.erase(iter);
     }
-    else
+
+    // Check if the action is Add or Changed.
+    if(action == UDEV::kAddDevice || action == UDEV::kChangeDevice)
     {
-      // Check if the device has been added or changed.
-      if(action == UDEV::kAddDevice || action == UDEV::kChangeDevice)
-      {
-        // Create the Video Card object.
-        std::unique_ptr<VideoCard> videoCard =
-            std::make_unique<VideoCard>(devNode);
+      // Create the Video Card object.
+      std::unique_ptr<VideoCard> videoCard =
+          std::make_unique<VideoCard>(devNode);
 
-        // Configure the video card.
-        videoCard->configure(fSettings.get());
+      // Configure the video card.
+      videoCard->configure(fSettings.get());
 
-        // Add the video card to the map.
-        fVideoCards[devNode] = std::move(videoCard);
-      }
+      // Add the video card to the map.
+      fVideoCards[devNode] = std::move(videoCard);
     }
   }
   catch(const std::exception & ex)
