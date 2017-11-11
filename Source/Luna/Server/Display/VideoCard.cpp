@@ -238,7 +238,7 @@ void VideoCard::configure(const Settings * settings)
     }
 
     // Create the display.
-    std::unique_ptr<Display> display = std::make_unique<Display>(fFD);
+    std::unique_ptr<Display> display = std::make_unique<Display>();
 
     // Configure the display.
     display->configure(fFD, connector.get(), resources.get(), settings);

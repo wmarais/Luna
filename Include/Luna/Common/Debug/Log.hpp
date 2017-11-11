@@ -6,9 +6,9 @@
   std::string file(__FILE__); \
   size_t I = file.rfind('/', file.length());\
   if (I != std::string::npos) file = file.substr(I+1, file.length() - I);\
-  std::stringstream ss; ss << lvl << " | " << file << " | " << \
+  std::stringstream SS; SS << lvl << " | " << file << " | " << \
     __FUNCTION__ << " | " << __LINE__ << " | " << msg;\
-  Luna::Common::Log::ptr()->write(ss.str());\
+  Luna::Common::Log::ptr()->write(SS.str());\
 }
 
 #ifdef LUNA_DEBUG

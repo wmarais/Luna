@@ -9,9 +9,9 @@ const uint32_t Display::kBitsPerPixel = 32;
 const uint32_t Display::kColourDepth = 24;
 
 //==============================================================================
-Display::Display(int fd) : fConnectorID(0), fEncoderID(0), fCRTCID(0),
-  fMidBufReady(false), fFrontBufReady(false), fSavedCRTC(nullptr, nullptr),
-  fPageFlipPending(false)
+Display::Display() : fConnectorID(0), fEncoderID(0), fCRTCID(0),
+  fMidBufReady(false), fFrontBufReady(false), fPageFlipPending(false),
+  fSavedCRTC(nullptr, nullptr)
 {
   LUNA_TRACE_FUNCTION();
 }
@@ -396,6 +396,11 @@ bool Display::render(int fd)
 void Display::pageFlipEvent(int fd, unsigned int frame, unsigned int sec,
     unsigned int usec, void * data)
 {
+  LUNA_UNUSED_PARAM(fd);
+  LUNA_UNUSED_PARAM(frame);
+  LUNA_UNUSED_PARAM(sec);
+  LUNA_UNUSED_PARAM(usec);
+
   LUNA_LOG_DEBUG("Page Flip Event.");
   Display * display = (Display*)data;
 

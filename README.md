@@ -100,10 +100,11 @@ be in the Build directory because rm -r * is a very dangerous command. I test
 on non production boxes that I regularly format so data loss is not a problem
 for me.
 
-To perform a clean after a git pull:
+To perform a clean rebuild after a git pull:
 ```
 rm -r *; cmake ../Luna -DCMAKE_BUILD_TYPE=Debug; make -j8
 ```
+
 
 To execute with logging (log function to be improved in future version):
 
@@ -112,6 +113,17 @@ To execute with logging (log function to be improved in future version):
 ```
 
 To quit, simply press Ctrl + C.
+
+## Debug Build Options
+The following options can be provided to cmake for Debug builds in the format
+
+```
+cmake -D....
+```
+
+*LUNA_DISABLE_TRACE - Disable function tracing, significantly reduce log 
+output.
+
 
 ## Valgrind (Checking Memory Leaks)
 The debug build is configured to support valgrind checks. To perform an
