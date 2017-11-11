@@ -20,6 +20,15 @@ Display::Display() : fConnectorID(0), fEncoderID(0), fCRTCID(0),
 Display::~Display()
 {
   LUNA_TRACE_FUNCTION();
+
+  // Free the used CRTC.
+  auto iter = std::find(fUsedCRTCs.begin(), fUsedCRTCs.end(), fCRTCID);
+
+  // Check if the CRTC was found.
+  if(iter != fUsedCRTCs.end())
+  {
+    fUsedCRTCs.erase(iter);
+  }
 }
 
 //==============================================================================
@@ -350,9 +359,6 @@ void Display::fill(uint8_t r, uint8_t g, uint8_t b)
 //==============================================================================
 bool Display::render(int fd)
 {
-  LUNA_LOG_DEBUG("PageFlipPending: " << fPageFlipPending << ", fMidBufReady: "
-      << fMidBufReady << ", FrontBufReady: " << fFrontBufReady);
-
   // Wait for a Page Flip to complete before flipping another frame.
   if(!fPageFlipPending)
   {

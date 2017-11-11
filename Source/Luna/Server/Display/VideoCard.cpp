@@ -121,8 +121,9 @@ void VideoCard::render()
   // Keep looping till stopRendering() is called.
   while(fRendering)
   {
+    // Check if page flip is pending.
     bool pageFlipPending = false;
-    LUNA_LOG_DEBUG("Rendering displays.");
+
     // Render each display.
     for(auto & display : fDisplays)
     {
@@ -145,7 +146,8 @@ void VideoCard::render()
       {
         if(drmHandleEvent(fFD, &drmEvent) < 0)
         {
-          LUNA_LOG_FATAL_ERROR("drmHandleEvent() failed because: " << strerror(errno));
+          LUNA_LOG_FATAL_ERROR("drmHandleEvent() failed because: " <<
+                               strerror(errno));
           exit(-1);
         }
       }
