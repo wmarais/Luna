@@ -21,6 +21,9 @@ include_directories("/usr/include/libdrm")
 set(GCC_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
 set(GCC_LINK_FLAGS    "-lgcov")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Enable exception handling.
 set(GCC_COMPILE_FLAGS "${GCC_COMPILE_FLAGS} -fexceptions")
 
@@ -56,6 +59,8 @@ set(LunaCommon_HEADERS
 
   Include/Luna/Common/Event.hpp
   Include/Luna/Common/GeneralHeaders.hpp
+  Include/Luna/Common/Math.hpp
+  Include/Luna/Common/Rect.hpp
   Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
   Include/Luna/Common/SystemHeaders.hpp
@@ -133,6 +138,7 @@ add_library(liblunabe STATIC ${liblunabe_HEADERS} ${liblunabe_SOURCES})
 ################################################################################
 set(liblunafe_HEADERS
   Include/Luna/FE/Button.hpp
+  Include/Luna/FE/Colour.hpp
   Include/Luna/FE/Event.hpp
   Include/Luna/FE/GridLayout.hpp
   Include/Luna/FE/HorizontalLayout.hpp

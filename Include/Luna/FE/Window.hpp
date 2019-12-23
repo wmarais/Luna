@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.hpp"
+#include "Renderer.hpp"
 
 namespace Luna::FE
 {
@@ -10,7 +11,8 @@ namespace Luna::FE
     Window();
     virtual ~Window() override;
 
-    virtual void render() override;
+    virtual void render(std::shared_ptr<Renderer> renderer,
+                        const Rect<int64_t> & area) override;
 
   };
 }

@@ -6,6 +6,7 @@
 #include "Common/Debug/Exception.hpp"
 #include "Common/Debug/Log.hpp"
 #include "Common/Debug/FunctionTracer.hpp"
+#include "Common/Rect.hpp"
 #include "Common/Settings.hpp"
 
 

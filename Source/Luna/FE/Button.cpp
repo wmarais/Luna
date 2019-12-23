@@ -15,7 +15,8 @@ Button::~Button()
 }
 
 /******************************************************************************/
-void Button::render()
+void Button::render(std::shared_ptr<Renderer> renderer,
+                    const Rect<int64_t> & area)
 {
 
 }
