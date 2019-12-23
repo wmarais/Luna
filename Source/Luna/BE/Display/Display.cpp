@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Display/Display.hpp"
+#include "../../../../Include/Luna/BE/Display/Display.hpp"
 
 using namespace Luna::Common;
 using namespace Luna::Server;

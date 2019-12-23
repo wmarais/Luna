@@ -3,6 +3,8 @@
 #include "Renderer.hpp"
 #include <memory>
 
+#include <vulkan/vulkan.h>
+
 namespace Luna::FE
 {
   class RendererVulkan : public Renderer

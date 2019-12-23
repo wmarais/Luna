@@ -4,7 +4,6 @@
 #include <string>
 #include <exception>
 #include <iostream>
-#include <vulkan/vulkan.h>
 
 namespace Luna::FE
 {

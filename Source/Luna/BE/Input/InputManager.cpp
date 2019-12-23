@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Input/InputManager.hpp"
+#include "../../../../Include/Luna/BE/Input/InputManager.hpp"
 
 using namespace Luna::Common;
 using namespace Luna::Server;

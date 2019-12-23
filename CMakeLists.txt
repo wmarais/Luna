@@ -70,15 +70,15 @@ set(LunaCommon_SOURCES
   Source/Luna/Common/Settings.cpp
 )
 
-add_library(LunaCommon STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
+add_library(libluna STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
 
 ################################################################################
 # Client Specific Code
 ################################################################################
 set(LunaClient_HEADERS
   Include/Luna/Client.hpp
-  Include/Luna/Client/Event.hpp
-  Include/Luna/Client/Request.hpp
+  Include/Luna/FE/Event.hpp
+  Include/Luna/FE/Request.hpp
 )
 
 set(LunaClient_SOURCES
@@ -88,75 +88,107 @@ set(LunaClient_SOURCES
 #add_library(LunaClient STATIC ${LunaClient_HEADERS} ${LunaClient_SOURCES})
 
 ################################################################################
-# Server Specific Code
+# BACKEND LIBRARY
 ################################################################################
-set(LunaServer_HEADERS
+set(liblunabe_HEADERS
   Include/Luna/Server.hpp
 
+  Include/Luna/BE/Request.hpp
+  Include/Luna/BE/Session.hpp
+  Include/Luna/BE/SessionManager.hpp
+  Include/Luna/BE/UDEV.hpp
 
-  Include/Luna/Server/Request.hpp
-  Include/Luna/Server/Session.hpp
-  Include/Luna/Server/SessionManager.hpp
-  Include/Luna/Server/UDEV.hpp
+  Include/Luna/BE/Display/Display.hpp
+  Include/Luna/BE/Display/DisplayManager.hpp
+  Include/Luna/BE/Display/VideoCard.hpp
 
-  Include/Luna/Server/Display/Display.hpp
-  Include/Luna/Server/Display/DisplayManager.hpp
-  Include/Luna/Server/Display/VideoCard.hpp
-
-  Include/Luna/Server/Input/InputDevice.hpp
-  Include/Luna/Server/Input/InputManager.hpp
-  Include/Luna/Server/Input/Joystick.hpp
-  Include/Luna/Server/Input/Keyboard.hpp
-  Include/Luna/Server/Input/Mouse.hpp
+  Include/Luna/BE/Input/InputDevice.hpp
+  Include/Luna/BE/Input/InputManager.hpp
+  Include/Luna/BE/Input/Joystick.hpp
+  Include/Luna/BE/Input/Keyboard.hpp
+  Include/Luna/BE/Input/Mouse.hpp
 )
 
-set(LunaServer_SOURCES
-  Source/Luna/Server/Request.cpp
-  Source/Luna/Server/Session.cpp
-  Source/Luna/Server/SessionManager.cpp
-  Source/Luna/Server/UDEV.cpp
+set(liblunabe_SOURCES
+  Source/Luna/BE/Request.cpp
+  Source/Luna/BE/Session.cpp
+  Source/Luna/BE/SessionManager.cpp
+  Source/Luna/BE/UDEV.cpp
 
-  Source/Luna/Server/Display/Display.cpp
-  Source/Luna/Server/Display/DisplayManager.cpp
-  Source/Luna/Server/Display/VideoCard.cpp
+  Source/Luna/BE/Display/Display.cpp
+  Source/Luna/BE/Display/DisplayManager.cpp
+  Source/Luna/BE/Display/VideoCard.cpp
 
-  Source/Luna/Server/Input/InputDevice.cpp
-  Source/Luna/Server/Input/InputManager.cpp
-  Source/Luna/Server/Input/Joystick.cpp
-  Source/Luna/Server/Input/Keyboard.cpp
-  Source/Luna/Server/Input/Mouse.cpp
+  Source/Luna/BE/Input/InputDevice.cpp
+  Source/Luna/BE/Input/InputManager.cpp
+  Source/Luna/BE/Input/Joystick.cpp
+  Source/Luna/BE/Input/Keyboard.cpp
+  Source/Luna/BE/Input/Mouse.cpp
 )
 
-add_library(LunaServer STATIC ${LunaServer_HEADERS} ${LunaServer_SOURCES})
+add_library(liblunabe STATIC ${liblunabe_HEADERS} ${liblunabe_SOURCES})
 
+################################################################################
+# FRONTEND LIBRARY
+################################################################################
+set(liblunafe_HEADERS
+  Include/Luna/FE/Button.hpp
+  Include/Luna/FE/Event.hpp
+  Include/Luna/FE/GridLayout.hpp
+  Include/Luna/FE/HorizontalLayout.hpp
+  Include/Luna/FE/Label.hpp
+  Include/Luna/FE/Object.hpp
+  Include/Luna/FE/Renderer.hpp
+  Include/Luna/FE/RendererVulkan.hpp
+  Include/Luna/FE/Request.hpp
+  Include/Luna/FE/TextBox.hpp
+  Include/Luna/FE/VerticalLayout.hpp
+  Include/Luna/FE/Window.hpp
+)
+
+set(liblunafe_SOURCES
+  Source/Luna/FE/Button.cpp
+  Source/Luna/FE/GridLayout.cpp
+  Source/Luna/FE/HorizontalLayout.cpp
+  Source/Luna/FE/Label.cpp
+  Source/Luna/FE/Object.cpp
+  Source/Luna/FE/Renderer.cpp
+  Source/Luna/FE/RendererVulkan.cpp
+  Source/Luna/FE/TextBox.cpp
+  Source/Luna/FE/VerticalLayout.cpp
+  Source/Luna/FE/Window.cpp
+)
+
+add_library(liblunafe STATIC ${liblunafe_HEADERS} ${liblunafe_SOURCES})
 
 ################################################################################
 # Session Client
 ################################################################################
-set(LunaMoon_HEADERS
+set(LunaFE_HEADERS
 
 )
 
-set(LunaMoon_SOURCES
-  Moon/Source/Main.cpp
+set(LunaFE_SOURCES
+  FrontEnd/Source/Main.cpp
 )
 
-add_executable(LunaMoon ${LunaMoon_HEADERS} ${LunaMoon_SOURCES})
+add_executable(LunaFE ${LunaFE_HEADERS} ${LunaFE_SOURCES})
 
 ################################################################################
 # Session Server
 ################################################################################
-set(LunaEarth_HEADERS
-  Earth/Include/Luna/Server/Earth.hpp
+set(LunaBE_HEADERS
+  BackEnd/Include/Luna/Server/Earth.hpp
 )
 
-set(LunaEarth_SOURCES
-  Earth/Source/Main.cpp
-  Earth/Source/Luna/Server/Earth.cpp
+set(LunaBE_SOURCES
+  BackEnd/Source/Main.cpp
+  BackEnd/Source/Luna/Server/Earth.cpp
 )
 
-add_executable(LunaEarth ${LunaEarth_HEADERS} ${LunaEarth_SOURCES})
-target_link_libraries(LunaEarth LunaServer LunaCommon ${Luna_LIBCONFIGPP}
+add_executable(LunaBE ${LunaBE_HEADERS} ${LunaBE_SOURCES})
+
+target_link_libraries(LunaBE liblunabe libluna ${Luna_LIBCONFIGPP}
     ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 

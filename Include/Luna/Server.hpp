@@ -2,21 +2,21 @@
 #define LUNA_SERVER_HPP
 
 
-#include "Server/Display/DisplayManager.hpp"
-#include "Server/Display/VideoCard.hpp"
+#include "BE/Display/DisplayManager.hpp"
+#include "BE/Display/VideoCard.hpp"
 
 //------------------------------------------------------------------------------
 // INPUT - All the headers for for input management.
 //------------------------------------------------------------------------------
-#include "Server/Input/InputDevice.hpp"
-#include "Server/Input/InputManager.hpp"
-#include "Server/Input/Joystick.hpp"
-#include "Server/Input/Keyboard.hpp"
-#include "Server/Input/Mouse.hpp"
+#include "BE/Input/InputDevice.hpp"
+#include "BE/Input/InputManager.hpp"
+#include "BE/Input/Joystick.hpp"
+#include "BE/Input/Keyboard.hpp"
+#include "BE/Input/Mouse.hpp"
 
 
-#include "Server/SessionManager.hpp"
+#include "BE/SessionManager.hpp"
 
-#include "Server/UDEV.hpp"
+#include "BE/UDEV.hpp"
 
 #endif // LUNA_SERVER_HPP

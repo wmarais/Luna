@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 #include <algorithm>
-#include <vulkan/vulkan.h>
 
 namespace Luna::FE
 {

@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Input/Keyboard.hpp"
+#include "../../../../Include/Luna/BE/Input/Keyboard.hpp"
 #include "../../../../Include/Luna/Common/Event.hpp"
 
 using namespace Luna::Server;

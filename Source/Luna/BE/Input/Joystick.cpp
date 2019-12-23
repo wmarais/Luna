@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Input/Joystick.hpp"
+#include "../../../../Include/Luna/BE/Input/Joystick.hpp"
 
 using namespace Luna::Server;
 

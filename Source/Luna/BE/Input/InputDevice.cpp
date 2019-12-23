@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Input/InputDevice.hpp"
+#include "../../../../Include/Luna/BE/Input/InputDevice.hpp"
 
 using namespace Luna::Server;
 

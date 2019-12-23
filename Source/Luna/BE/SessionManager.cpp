@@ -1,4 +1,4 @@
-#include "../../../Include/Luna/Server/SessionManager.hpp"
+#include "../../../Include/Luna/BE/SessionManager.hpp"
 
 using namespace Luna::Server;
 

@@ -1,4 +1,5 @@
 #include "../../../Include/Luna/FE/GridLayout.hpp"
+#include <cstring>
 
 using namespace Luna::FE;
 

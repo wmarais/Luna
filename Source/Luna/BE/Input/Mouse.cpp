@@ -1,4 +1,4 @@
-#include "../../../../Include/Luna/Server/Input/Mouse.hpp"
+#include "../../../../Include/Luna/BE/Input/Mouse.hpp"
 #include "../../../../Include/Luna/Common/Event.hpp"
 
 using namespace Luna::Server;
