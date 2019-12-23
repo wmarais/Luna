@@ -11,7 +11,7 @@ namespace Luna::FE
     Button();
     virtual ~Button() override;
 
-    void render(std::shared_ptr<Renderer> renderer,
+    void repaint(Renderer & renderer,
                 const Rect<int64_t> & area) override;
 
   };

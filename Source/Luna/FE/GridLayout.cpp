@@ -50,7 +50,7 @@ void GridLayout::setCell(size_t row, size_t col, std::shared_ptr<Object> obj)
 }
 
 /******************************************************************************/
-void GridLayout::render(std::shared_ptr<Renderer> renderer,
+void GridLayout::repaint(Renderer &renderer,
                         const Rect<int64_t> & area)
 {
 

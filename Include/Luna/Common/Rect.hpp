@@ -71,7 +71,7 @@ namespace Luna
      * @return      False if no intersection, else the rectangle that formed
      *              from the intersection of the rectangles.
      **************************************************************************/
-    std::optional<Rect<T>> intersect(const Rect<T> & rect)
+    std::optional<Rect<T>> intersect(const Rect<T> & rect) const
     {
       /* Check for an intersection using exclusion. */
       if(fX0 > rect.fX1 || fX1 < rect.fX0 ||

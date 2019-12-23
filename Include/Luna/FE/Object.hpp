@@ -19,8 +19,8 @@ namespace Luna::FE
     /* The children of the object. */
     std::vector<std::shared_ptr<Object>> fChildren;
 
-    /* The bounding rectangle of the object. */
-    Rect<int64_t> fRect;
+    /* The bounding rectangle of the object in screen coordinates. */
+    Rect<int64_t> fScreenRect;
 
   protected:
 
@@ -54,10 +54,12 @@ namespace Luna::FE
      * that does not require it.
      *
      * @param renderer  The renderer to use for repainting.
-     * @param area      The area that must be repainted. This is the area
-     *                  relative to the parent object.
+     * @param area      The area that must be repainted in screen coordinates.
      **************************************************************************/
-    virtual void render(std::shared_ptr<Renderer> renderer,
-                        const Rect<int64_t> & area) = 0;
+    void render(Renderer & renderer, const Rect<int64_t> & screenArea);
+
+
+    virtual void repaint(Renderer & renderer,
+                         const Rect<int64_t> & screenArea) = 0;
   };
 }

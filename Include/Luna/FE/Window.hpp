@@ -11,7 +11,7 @@ namespace Luna::FE
     Window();
     virtual ~Window() override;
 
-    virtual void render(std::shared_ptr<Renderer> renderer,
+    virtual void repaint(Renderer & renderer,
                         const Rect<int64_t> & area) override;
 
   };

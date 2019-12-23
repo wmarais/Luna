@@ -44,3 +44,23 @@ std::shared_ptr<Object> Object::getParent()
 {
   return fParent;
 }
+
+/******************************************************************************/
+void Object::render(Renderer & renderer, const Rect<int64_t> & screenArea)
+{
+  /* Calculate the area of this object that should be repainted. */
+  auto area = screenArea.intersect(fScreenRect);
+
+  /* There is nothing more to render. */
+  if(!area)
+    return;
+
+  /* Repaint the object. */
+  repaint(renderer, screenArea);
+
+  /* Repaint all the children. */
+  for(auto & child : fChildren)
+  {
+    child->render(renderer, area.value());
+  }
+}
