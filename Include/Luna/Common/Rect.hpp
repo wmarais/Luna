@@ -6,7 +6,7 @@
 
 namespace Luna
 {
-  template <typename T> class Rect
+  template <typename T> class RectBase
   {
     /* The coordinates of the rectangle. */
     T fX0, fY0, fX1, fY1;
@@ -38,10 +38,31 @@ namespace Luna
      * @param width   The Width of the rectangle.
      * @param height  The height of the rectangle.
      **************************************************************************/
-    Rect(T x = 0, T y = 0, T width = 0, T height = 0) : fX0(x), fY0(y),
+    RectBase(T x = 0, T y = 0, T width = 0, T height = 0) : fX0(x), fY0(y),
       fX1(x + width), fY1(y + height)
     {
       validate();
+    }
+
+
+    T x() const
+    {
+      return fX0;
+    }
+
+    T y() const
+    {
+      return fY0;
+    }
+
+    T width() const
+    {
+      return fX1 - fX0;
+    }
+
+    T height() const
+    {
+      return fY1 - fY0;
     }
 
     T x0() const
@@ -71,7 +92,7 @@ namespace Luna
      * @return      False if no intersection, else the rectangle that formed
      *              from the intersection of the rectangles.
      **************************************************************************/
-    std::optional<Rect<T>> intersect(const Rect<T> & rect) const
+    std::optional<RectBase<T>> intersect(const RectBase<T> & rect) const
     {
       /* Check for an intersection using exclusion. */
       if(fX0 > rect.fX1 || fX1 < rect.fX0 ||
@@ -82,7 +103,7 @@ namespace Luna
       }
 
       /* Calculate the intersection of the two rectangles. */
-      Rect temp;
+      RectBase temp;
       temp.fX0 = fX0 < rect.fX0 ? rect.fX0 : fX0;
       temp.fX1 = fX1 > rect.fX1 ? rect.fX1 : fX1;
       temp.fY0 = fY0 < rect.fY0 ? rect.fY0 : fY0;
@@ -102,7 +123,7 @@ namespace Luna
    * @return      The output stream that was supplied.
    ****************************************************************************/
   template <typename T>
-  std::ostream & operator << (std::ostream & os, const Rect<T> & rect)
+  std::ostream & operator << (std::ostream & os, const RectBase<T> & rect)
   {
     os << "[" << rect.x0() << ", " << rect.y0() << "] - [" << rect.x1() <<
           ", " << rect.y1() << "]";

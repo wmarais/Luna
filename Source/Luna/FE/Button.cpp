@@ -15,7 +15,7 @@ Button::~Button()
 }
 
 /******************************************************************************/
-void Button::repaint(Renderer & renderer, const Rect<int64_t> & area)
+void Button::repaint(Renderer & renderer, const RectBase<int64_t> & area)
 {
 
 }

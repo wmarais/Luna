@@ -2,6 +2,7 @@
 #define LUNA_COMMON_HPP
 
 #include "Common/GeneralHeaders.hpp"
+#include "Common/Colour.hpp"
 #include "Common/Event.hpp"
 #include "Common/Debug/Exception.hpp"
 #include "Common/Debug/Log.hpp"
@@ -13,9 +14,18 @@
 #define LUNA_INLINE inline
 #define LUNA_UNUSED_PARAM(p) (void)p
 
-
 namespace Luna
 {
+  typedef ColourBase<uint8_t> Colour;
+  typedef RectBase<int64_t> Rect;
+
+  static const Colour kWhite(255, 255, 255, 255);
+  static const Colour kBlack(0, 0, 0, 255);
+  static const Colour kBlue(0, 0, 255, 255);
+  static const Colour kRed(255, 0, 0, 255);
+
+
+
   namespace Common
   {
     //==========================================================================

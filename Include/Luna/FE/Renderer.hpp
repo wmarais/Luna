@@ -6,19 +6,31 @@
 #include <iostream>
 #include <cstdint>
 
-#include "../Common/Rect.hpp"
+
+#include "../Common.hpp"
 
 namespace Luna::FE
 {
   class Renderer
   {
+    int64_t fWidth;
+    int64_t fHeight;
+
+    std::vector<Colour> fPixels;
 
   public:
 
-    Renderer();
+    Renderer(int64_t width = 800, int64_t height = 600);
+
     virtual ~Renderer();
 
-    virtual void fill(const Luna::Rect<int64_t> & rect);
+    Rect rect() const;
+
+
+
+    virtual void fill(const Rect & rect, const Colour & colour);
+
+    virtual void savePNG(const std::string & fileName);
 
   };
 }

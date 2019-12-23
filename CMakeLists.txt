@@ -9,6 +9,9 @@ find_library(Luna_LIBUUID "uuid")
 find_library(Luna_LIBUDEV "udev")
 find_library(Luna_LIBDRM "drm")
 
+find_package(PNG REQUIRED)
+include_directories(${PNG_INCLUDE_DIRS})
+
 set(Luna_LIBPTHREAD pthread)
 
 
@@ -57,6 +60,7 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/Debug/FunctionTracer.hpp
   Include/Luna/Common/Debug/Log.hpp
 
+  Include/Luna/Common/Colour.hpp
   Include/Luna/Common/Event.hpp
   Include/Luna/Common/GeneralHeaders.hpp
   Include/Luna/Common/Math.hpp
@@ -138,7 +142,6 @@ add_library(liblunabe STATIC ${liblunabe_HEADERS} ${liblunabe_SOURCES})
 ################################################################################
 set(liblunafe_HEADERS
   Include/Luna/FE/Button.hpp
-  Include/Luna/FE/Colour.hpp
   Include/Luna/FE/Event.hpp
   Include/Luna/FE/GridLayout.hpp
   Include/Luna/FE/HorizontalLayout.hpp
@@ -179,6 +182,7 @@ set(LunaFE_SOURCES
 )
 
 add_executable(LunaFE ${LunaFE_HEADERS} ${LunaFE_SOURCES})
+target_link_libraries(LunaFE liblunafe libluna ${PNG_LIBRARIES})
 
 ################################################################################
 # Session Server

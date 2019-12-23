@@ -22,7 +22,7 @@ namespace Luna::FE
     virtual ~GridLayout() override;
 
     void repaint(Renderer & renderer,
-                const Rect<int64_t> & area) override;
+                const RectBase<int64_t> & area) override;
 
     void setCell(size_t row, size_t col, std::shared_ptr<Object> obj);
   };

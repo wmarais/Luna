@@ -54,7 +54,7 @@ Object * Object::getParent()
 }
 
 /******************************************************************************/
-void Object::render(Renderer & renderer, const Rect<int64_t> & screenArea)
+void Object::render(Renderer & renderer, const Rect & screenArea)
 {
   /* Calculate the area of this object that should be repainted. */
   auto area = screenArea.intersect(fScreenRect);

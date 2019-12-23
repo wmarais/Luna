@@ -6,7 +6,7 @@
 
 #include "Renderer.hpp"
 
-#include "../Common/Rect.hpp"
+#include "../Common.hpp"
 
 namespace Luna::FE
 {
@@ -21,7 +21,7 @@ namespace Luna::FE
     std::vector<std::shared_ptr<Object>> fChildren;
 
     /** The bounding rectangle of the object in screen coordinates. */
-    Rect<int64_t> fScreenRect;
+    RectBase<int64_t> fScreenRect;
 
     /***********************************************************************//**
      * GUI object specific repaint function to be implemented by each GUI
@@ -31,7 +31,7 @@ namespace Luna::FE
      * @param screenArea  The screenArea that needs to be repainted.
      **************************************************************************/
     virtual void repaint(Renderer & renderer,
-                         const Rect<int64_t> & screenArea) = 0;
+                         const Rect & screenArea) = 0;
 
   public:
     /***********************************************************************//**
@@ -69,6 +69,6 @@ namespace Luna::FE
      * @param renderer  The renderer to use for repainting.
      * @param area      The area that must be repainted in screen coordinates.
      **************************************************************************/
-    void render(Renderer & renderer, const Rect<int64_t> & screenArea);
+    void render(Renderer & renderer, const Rect & screenArea);
   };
 }

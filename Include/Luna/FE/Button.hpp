@@ -12,7 +12,7 @@ namespace Luna::FE
     virtual ~Button() override;
 
     void repaint(Renderer & renderer,
-                const Rect<int64_t> & area) override;
+                const RectBase<int64_t> & area) override;
 
   };
 }
