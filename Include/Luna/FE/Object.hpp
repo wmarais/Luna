@@ -13,40 +13,53 @@ namespace Luna::FE
   class Object
   {
   protected:
-    /* The parent of the object. */
-    std::shared_ptr<Object> fParent;
+    /** The parent of the object. This can not be a shared_ptr otherwise it will
+     * be a cyclic reference and a memory leak will be created. */
+    Object * fParent;
 
-    /* The children of the object. */
+    /** The children of the object. */
     std::vector<std::shared_ptr<Object>> fChildren;
 
-    /* The bounding rectangle of the object in screen coordinates. */
+    /** The bounding rectangle of the object in screen coordinates. */
     Rect<int64_t> fScreenRect;
 
-  protected:
+    /***********************************************************************//**
+     * GUI object specific repaint function to be implemented by each GUI
+     * object.
+     *
+     * @param renderer    The renderer to use for painting.
+     * @param screenArea  The screenArea that needs to be repainted.
+     **************************************************************************/
+    virtual void repaint(Renderer & renderer,
+                         const Rect<int64_t> & screenArea) = 0;
 
   public:
-    Object();
+    /***********************************************************************//**
+     * Create a new GUI object and set it's parent.
+     *
+     * @param parent  The parent of the object.
+     **************************************************************************/
+    Object(Object * parent = nullptr);
+
+    /***********************************************************************//**
+     * Destroy the GUI object and clear all children's reference to it.
+     **************************************************************************/
     virtual ~Object();
 
     /***********************************************************************//**
-     * Provide a mechanism for chaning the parent of a child object. This is the
-     * only mechanism available for this purpose and is done so on purpose to
-     * ensure that the integrity of hierachy. Any other method of chaning
-     * reparenting an object is not supported and should reported as bug.
+     * Add a child oject to this object. This object will become the parent of
+     * the child node.
      *
-     * @param parent  The new parent of the child object.
-     * @param child   The child object whose parent must be updated.
+     * @param child The new child to add to this object.
      **************************************************************************/
-    static void setParent(std::shared_ptr<Object> parent,
-                          std::shared_ptr<Object> child);
+    void addChild(std::shared_ptr<Object> child);
 
     /***********************************************************************//**
-     * Return the handle to the object's parent. The pointer must still be
-     * checked for validity before being used.
+     * Return the handle to the object's parent.
      *
      * @return  The pointer to the object's parent.
      **************************************************************************/
-    std::shared_ptr<Object> getParent();
+    Object * getParent();
 
     /***********************************************************************//**
      * Repaint the object. The object should check if they fall within the
@@ -57,9 +70,5 @@ namespace Luna::FE
      * @param area      The area that must be repainted in screen coordinates.
      **************************************************************************/
     void render(Renderer & renderer, const Rect<int64_t> & screenArea);
-
-
-    virtual void repaint(Renderer & renderer,
-                         const Rect<int64_t> & screenArea) = 0;
   };
 }

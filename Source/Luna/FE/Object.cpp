@@ -3,18 +3,22 @@
 using namespace Luna::FE;
 
 /******************************************************************************/
-Object::Object()
+Object::Object(Object * parent) : fParent(parent)
 {
 }
 
 /******************************************************************************/
 Object::~Object()
 {
+  /* Set the parent node of all the children to NULL. */
+  for(auto & child : fChildren)
+  {
+    child->fParent = nullptr;
+  }
 }
 
 /******************************************************************************/
-void Object::setParent(std::shared_ptr<Object> parent,
-                       std::shared_ptr<Object> child)
+void Object::addChild(std::shared_ptr<Object> child)
 {
   /* Check if the child currently has a parent. */
   if(child->fParent)
@@ -32,15 +36,19 @@ void Object::setParent(std::shared_ptr<Object> parent,
     }
   }
 
-  /* Set the child's new parent. */
-  child->fParent = parent;
+  /* Search for this child in the current list of children. */
+  auto iter = std::find(fChildren.begin(), fChildren.end(), child);
 
-  /* Add the child to the new parent's list of children. */
-  parent->fChildren.push_back(child);
+  /* Add the child if not allready in the list of children. */
+  if(iter == fChildren.end())
+    fChildren.push_back(child);
+
+  /* Set the parent of the child. */
+  child->fParent = this;
 }
 
 /******************************************************************************/
-std::shared_ptr<Object> Object::getParent()
+Object * Object::getParent()
 {
   return fParent;
 }
