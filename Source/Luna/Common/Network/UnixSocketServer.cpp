@@ -12,7 +12,7 @@ using namespace Luna;
 
 /******************************************************************************/
 UnixSocketServer::UnixSocketServer(const std::string & path, size_t backlog) :
-  fState(kStopped), kBacklog(backlog), fHandle(-1)
+  fState(kStopped), kBacklog(backlog), fHandle(-1), fListenException(nullptr)
 {
   /* Trace the function call. */
   LUNA_TRACE_FUNCTION();
@@ -26,6 +26,9 @@ UnixSocketServer::UnixSocketServer(const std::string & path, size_t backlog) :
     LUNA_THROW_RUNTIME_ERROR("Failed to create socket.");
   }
 
+  /* Delete any existing unix socket of the same name / path. The socket will
+   * linger if not shut down properly and will block the server from restarting
+   * cleanly since it wont be able to bind. */
   unlink(path.c_str());
 
   /* Initialise the address structure. */

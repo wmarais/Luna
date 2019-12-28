@@ -14,7 +14,7 @@ namespace Luna
 {
   class UnixSocketServer
   {
-    /* The states of the listening thread. */
+    /** The states of the listening thread. */
     enum States
     {
       kRunning,
@@ -58,12 +58,22 @@ namespace Luna
      **************************************************************************/
     UnixSocketServer(const std::string & path, size_t backlog = 256);
 
-
+    /***********************************************************************//**
+     * Terminate the listening thread and close the socket.
+     **************************************************************************/
     ~UnixSocketServer();
 
-
+    /***********************************************************************//**
+     * Check if any exceptions has been thrown in the listening thread and
+     * rethrow it. This function must only be called from the main thread. This
+     **************************************************************************/
     void rethrowException();
 
+    /***********************************************************************//**
+     * Check if a new connection has been established and return it if it has.
+     *
+     * @return  The new connection if one has been established or false.
+     **************************************************************************/
     std::optional<std::unique_ptr<UnixSocketClient>> hasNewConn();
   };
 }
