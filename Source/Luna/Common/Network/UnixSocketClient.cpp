@@ -115,11 +115,20 @@ void UnixSocketClient::read(uint8_t * buffer, size_t count)
 
     /* Increment the counter of bytes read. */
     offset += static_cast<size_t>(result);
+
+    /* Check if there is more to read or not. */
+    if(offset < count)
+    {
+      /* Usually this will only happen when the buffer is empty and we are
+       * waiting for new data to arrive. Instead of thrashign the CPU waiting,
+       * release it to another process to do something useful. */
+      sleep(0);
+    }
   }
 }
 
 /******************************************************************************/
-void UnixSocketClient::write(uint8_t * buffer, size_t count)
+void UnixSocketClient::write(const uint8_t * const buffer, size_t count)
 {
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
@@ -142,6 +151,15 @@ void UnixSocketClient::write(uint8_t * buffer, size_t count)
 
     /* Increment the counter of bytes written. */
     offset += static_cast<size_t>(result);
+
+    /* Check if there is more to write or not. */
+    if(offset < count)
+    {
+      /* Usually this will only happen when buffers are full and we are waiting
+       * for it to clear out before we can write more. Instead of thrashing the
+       * CPU waiting, release it to another process to do something useful. */
+      sleep(0);
+    }
   }
 }
 
@@ -247,6 +265,16 @@ void UnixSocketClient::rethrowExceptions()
 
 /******************************************************************************/
 bool UnixSocketClient::writeBlock(std::vector<uint8_t> data)
+{
+  /* Trace the function. */
+  LUNA_TRACE_FUNCTION();
+
+  /* Now that the data is copied, swap it into the queue. */
+  return writeBlockSwap(data);
+}
+
+/******************************************************************************/
+bool UnixSocketClient::writeBlockSwap(std::vector<uint8_t> & data)
 {
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
