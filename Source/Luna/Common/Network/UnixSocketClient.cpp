@@ -84,14 +84,15 @@ UnixSocketClient::~UnixSocketClient()
   fWriteThreadState = kStopped;
 
   /* Wait for both threads to finish. */
-  fReadThread->join();
-  fWriteThread->join();
+  if(fReadThread)
+    fReadThread->join();
+
+  if(fWriteThread)
+    fWriteThread->join();
 
   /* Check if the socket is open. */
   if(fHandle != -1)
-  {
     close(fHandle);
-  }
 }
 
 /******************************************************************************/
@@ -222,11 +223,11 @@ void UnixSocketClient::writeThreadEntry()
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
 
-  /* Set the thread state to running. */
-  fWriteThreadState = kRunning;
-
   try
   {
+    /* Set the thread state to running. */
+    fWriteThreadState = kRunning;
+
     /* Keep writting while executing. */
     while(fWriteThreadState == kRunning)
     {

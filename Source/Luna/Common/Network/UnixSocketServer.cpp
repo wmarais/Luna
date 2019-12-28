@@ -12,7 +12,7 @@ using namespace Luna;
 
 /******************************************************************************/
 UnixSocketServer::UnixSocketServer(const std::string & path, size_t backlog) :
-  fExecuting(true), kBacklog(backlog), klPath(path), fHandle(-1)
+  fState(kStopped), kBacklog(backlog), fHandle(-1)
 {
   /* Trace the function call. */
   LUNA_TRACE_FUNCTION();
@@ -32,7 +32,7 @@ UnixSocketServer::UnixSocketServer(const std::string & path, size_t backlog) :
   struct sockaddr_un addr;
   memset(&addr, 0, sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, klPath.c_str(), sizeof(addr.sun_path) - 1);
+  strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
 
   /* Bind the socket and check if an error occured. */
   if(bind(fHandle, reinterpret_cast<struct sockaddr*>(&addr),
@@ -53,19 +53,15 @@ UnixSocketServer::~UnixSocketServer()
   LUNA_TRACE_FUNCTION();
 
   /* Stop the listening thread. */
-  fExecuting = false;
+  fState = kStopped;
 
   /* Wait for the thread to finish. */
   if(fThread)
-  {
     fThread->join();
-  }
 
   /* Close the socket. */
   if(fHandle != -1)
-  {
     close(fHandle);
-  }
 }
 
 /******************************************************************************/
@@ -74,41 +70,75 @@ void UnixSocketServer::listenThreadEntry()
   /* Trace the function call. */
   LUNA_TRACE_FUNCTION();
 
-  /* Keep looping while waiting for new network connections. */
-  while(fExecuting)
+  try
   {
-    /* Listen for new connection requests. */
-    if(listen(fHandle, static_cast<int>(kBacklog)) == -1)
+    /* Mark the thread as running. */
+    fState = kRunning;
+
+    /* Keep looping while waiting for new network connections. */
+    while(fState == kRunning)
     {
-      LUNA_THROW_RUNTIME_ERROR("Unix Socket listen() for connections: " <<
-                               strerror(errno));
+      /* Listen for new connection requests. */
+      if(listen(fHandle, static_cast<int>(kBacklog)) == -1)
+      {
+        LUNA_THROW_RUNTIME_ERROR("Unix Socket listen() for connections: " <<
+                                 strerror(errno));
+      }
+
+      /* Accept the new connection. */
+      int handle = accept(fHandle, nullptr, nullptr);
+
+      /* Check if an error occured. */
+      if(handle == -1)
+      {
+        LUNA_THROW_RUNTIME_ERROR("Unix Socket failed to accept() connection: " <<
+                                 strerror(errno));
+      }
+
+      /* Create the new socket. */
+      std::unique_ptr<UnixSocketClient> socket =
+          std::make_unique<UnixSocketClient>(handle);
+
+      /* Add it to the queue. */
+      {
+        std::scoped_lock l(fNewConnMutex);
+        fNewConnSockets.push_back(std::move(socket));
+      }
     }
+  }
+  catch(...)
+  {
+    /* Get a handle to the current exception. */
+    fListenException = std::current_exception();
 
-    /* Accept the new connection. */
-    int handle = accept(fHandle, nullptr, nullptr);
+    /* Mark the thread as having an error. */
+    fState = kException;
+  }
+}
 
-    /* Check if an error occured. */
-    if(handle == -1)
-    {
-      LUNA_THROW_RUNTIME_ERROR("Unix Socket failed to accept() connection: " <<
-                               strerror(errno));
-    }
+/******************************************************************************/
+void UnixSocketServer::rethrowException()
+{
+  /* Trace the function. */
+  LUNA_TRACE_FUNCTION();
 
-    /* Create the new socket. */
-    std::unique_ptr<UnixSocketClient> socket =
-        std::make_unique<UnixSocketClient>(handle);
-
-    /* Add it to the queue. */
-    {
-      std::scoped_lock l(fNewConnMutex);
-      fNewConnSockets.push_back(std::move(socket));
-    }
+  /* Rethrow any exceptions in the listening thread. */
+  if(fState == kException)
+  {
+    if(fListenException)
+      std::rethrow_exception(fListenException);
   }
 }
 
 /******************************************************************************/
 std::optional<std::unique_ptr<UnixSocketClient>> UnixSocketServer::hasNewConn()
 {
+  /* Trace the function. */
+  LUNA_TRACE_FUNCTION();
+
+  /* Rethrow any exceptions that was caught. */
+  rethrowException();
+
   /* Lock access to the list. */
   std::scoped_lock l(fNewConnMutex);
 

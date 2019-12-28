@@ -14,17 +14,25 @@ namespace Luna
 {
   class UnixSocketServer
   {
-    /** Flag to indicate whether the server must keep listening or not. */
-    std::atomic_bool fExecuting;
+    /* The states of the listening thread. */
+    enum States
+    {
+      kRunning,
+      kStopped,
+      kException
+    };
+
+    /** The current state of the listening thread. */
+    std::atomic<States> fState;
 
     /** The number of conenction requests to queue. */
     const size_t kBacklog;
 
-    /** The path of the socket. */
-    const std::string klPath;
-
     /* The handle to the socket. */
     int fHandle;
+
+    /** The exception that was thrown in the listening thread. */
+    std::exception_ptr fListenException;
 
     /** The thread that is used for listening and accepting new connection
      * requests. */
@@ -50,8 +58,11 @@ namespace Luna
      **************************************************************************/
     UnixSocketServer(const std::string & path, size_t backlog = 256);
 
+
     ~UnixSocketServer();
 
+
+    void rethrowException();
 
     std::optional<std::unique_ptr<UnixSocketClient>> hasNewConn();
   };
