@@ -23,6 +23,16 @@
   throw std::runtime_error(ss.str().c_str());\
 }
 
+#define LUNA_THROW_NESTED_RUNTIME_ERROR(msg) \
+{\
+  std::string file(__FILE__); \
+  size_t i = file.rfind('/', file.length());\
+  if (i != std::string::npos) file = file.substr(i+1, file.length() - i);\
+  std::stringstream ss; ss << "Source: " << file << "," << \
+    __FUNCTION__ << "," << __LINE__ << " - " << msg;\
+  std::throw_with_nested(std::runtime_error(ss.str().c_str()));\
+}
+
 
 /*#define LUNA_THROW_EXCEPTION(msg) \
 {\

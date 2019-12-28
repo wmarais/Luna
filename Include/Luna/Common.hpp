@@ -1,12 +1,17 @@
 #ifndef LUNA_COMMON_HPP
 #define LUNA_COMMON_HPP
 
-#include "Common/GeneralHeaders.hpp"
-#include "Common/Colour.hpp"
-#include "Common/Event.hpp"
 #include "Common/Debug/Exception.hpp"
 #include "Common/Debug/Log.hpp"
 #include "Common/Debug/FunctionTracer.hpp"
+#include "Common/Network/UnixSocketClient.hpp"
+#include "Common/Network/UnixSocketServer.hpp"
+
+
+#include "Common/GeneralHeaders.hpp"
+#include "Common/Colour.hpp"
+#include "Common/Event.hpp"
+
 #include "Common/Rect.hpp"
 #include "Common/Settings.hpp"
 

@@ -60,6 +60,10 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/Debug/FunctionTracer.hpp
   Include/Luna/Common/Debug/Log.hpp
 
+  Include/Luna/Common/Network/UnixSocketClient.hpp
+  Include/Luna/Common/Network/UnixSocketServer.hpp
+
+  Include/Luna/Common/CircularQueue.hpp
   Include/Luna/Common/Colour.hpp
   Include/Luna/Common/Event.hpp
   Include/Luna/Common/GeneralHeaders.hpp
@@ -74,6 +78,9 @@ set(LunaCommon_SOURCES
   Source/Luna/Common/Debug/Exception.cpp
   Source/Luna/Common/Debug/FunctionTracer.cpp
   Source/Luna/Common/Debug/Log.cpp
+
+  Source/Luna/Common/Network/UnixSocketClient.cpp
+  Source/Luna/Common/Network/UnixSocketServer.cpp
 
   Source/Luna/Common/Event.cpp
   Source/Luna/Common/Settings.cpp
@@ -202,4 +209,5 @@ target_link_libraries(LunaBE liblunabe libluna ${Luna_LIBCONFIGPP}
     ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 
+subdirs(Tests/UnixSocket)
 

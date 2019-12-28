@@ -7,6 +7,19 @@ namespace Luna
   {
     class Session
     {
+      enum class States
+      {
+        kLogin
+      };
+      
+      
+      
+    public:
+      
+      
+      
+      
+      
 
     };
   }

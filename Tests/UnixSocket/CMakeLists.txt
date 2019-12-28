@@ -1,0 +1,6 @@
+
+add_executable(LunaTest_UnixSocketServer Server.cpp)
+target_link_libraries(LunaTest_UnixSocketServer libluna pthread)
+
+add_executable(LunaTest_UnixSocketClient Client.cpp)
+target_link_libraries(LunaTest_UnixSocketClient libluna pthread)
