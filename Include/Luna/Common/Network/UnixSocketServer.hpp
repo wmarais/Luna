@@ -14,29 +14,29 @@ namespace Luna
 {
   class UnixSocketServer
   {
-
+    /** Flag to indicate whether the server must keep listening or not. */
     std::atomic_bool fExecuting;
 
-    /* The number of conenction requests to queue. */
+    /** The number of conenction requests to queue. */
     const size_t kBacklog;
 
-    /* The path of the socket. */
+    /** The path of the socket. */
     const std::string klPath;
 
     /* The handle to the socket. */
     int fHandle;
 
-    /* The thread that is used for listening and accepting new connection
+    /** The thread that is used for listening and accepting new connection
      * requests. */
     std::unique_ptr<std::thread> fThread;
 
-    /* Mutex used to control access to the fnewConnSocket vector. */
+    /** Mutex used to control access to the fnewConnSocket vector. */
     std::mutex fNewConnMutex;
 
-    /* The list of new connections. */
+    /** The list of new connections. */
     std::vector<std::unique_ptr<UnixSocketClient>> fNewConnSockets;
 
-    /* The entry functon for the thread. */
+    /** The entry functon for the thread. */
     void listenThreadEntry();
 
   public:

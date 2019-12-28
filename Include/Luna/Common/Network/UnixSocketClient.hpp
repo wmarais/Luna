@@ -25,14 +25,25 @@ namespace Luna
    ****************************************************************************/
   class UnixSocketClient final
   {
+    /** The states of the IO threads. */
+    enum States
+    {
+      kRunning,
+      kStopped,
+      kException
+    };
+
     /** The maximum number of blocks to queue. */
     static const size_t kMaxIOQueueSize = 256;
 
     /** The handle of the socket. */
     int fHandle;
 
-    /** Indicate whether the socket is running. */
-    std::atomic_bool fExecuting;
+    /** The state of the read thread. */
+    std::atomic<States> fReadThreadState;
+
+    /** The state of the write thread. */
+    std::atomic<States> fWriteThreadState;
 
     /** Is set when a read exception occurs in the Read Thread. */
     std::exception_ptr fReadException;

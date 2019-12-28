@@ -12,7 +12,8 @@ using namespace Luna;
 
 /******************************************************************************/
 UnixSocketClient::UnixSocketClient(int handle) : fHandle(handle),
-  fExecuting(true), fReadException(nullptr), fWriteException(nullptr)
+  fReadThreadState(kStopped), fWriteThreadState(kStopped),
+  fReadException(nullptr), fWriteException(nullptr)
 {
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
@@ -34,7 +35,8 @@ UnixSocketClient::UnixSocketClient(int handle) : fHandle(handle),
 
 /******************************************************************************/
 UnixSocketClient::UnixSocketClient(const std::string & path) : fHandle(-1),
-  fExecuting(true), fReadException(nullptr), fWriteException(nullptr)
+  fReadThreadState(kStopped), fWriteThreadState(kStopped),
+  fReadException(nullptr), fWriteException(nullptr)
 {
   /* Trace the function call. */
   LUNA_TRACE_FUNCTION();
@@ -78,7 +80,8 @@ UnixSocketClient::~UnixSocketClient()
   LUNA_TRACE_FUNCTION();
 
   /* Stop execution of the socket. */
-  fExecuting = false;
+  fReadThreadState = kStopped;
+  fWriteThreadState = kStopped;
 
   /* Wait for both threads to finish. */
   fReadThread->join();
@@ -169,13 +172,16 @@ void UnixSocketClient::readThreadEntry()
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
 
+  /* Mark the thread as running. */
+  fReadThreadState = kRunning;
+
   /* The read buffer to cache so we dont keep reallocating. */
   std::vector<uint8_t> buff;
 
   try
   {
     /* Keep reading while executing. */
-    while(fExecuting)
+    while(fReadThreadState == kRunning)
     {
       /* The lenght of the block. */
       uint32_t count = 0;
@@ -203,6 +209,9 @@ void UnixSocketClient::readThreadEntry()
   {
     /* Store the exception. */
     fReadException = std::current_exception();
+
+    /* Set the thread state to indicate and exception occured. */
+    fReadThreadState = kException;
   }
 }
 
@@ -213,10 +222,13 @@ void UnixSocketClient::writeThreadEntry()
   /* Trace the function. */
   LUNA_TRACE_FUNCTION();
 
+  /* Set the thread state to running. */
+  fWriteThreadState = kRunning;
+
   try
   {
     /* Keep writting while executing. */
-    while(fExecuting)
+    while(fWriteThreadState == kRunning)
     {
       std::scoped_lock l(fWriteMutex);
 
@@ -236,7 +248,10 @@ void UnixSocketClient::writeThreadEntry()
   catch (...)
   {
     /* Store the exception. */
-    fReadException = std::current_exception();
+    fWriteException = std::current_exception();
+
+    /* Set the thread state. */
+    fWriteThreadState = kException;
   }
 }
 
@@ -247,17 +262,15 @@ void UnixSocketClient::rethrowExceptions()
   LUNA_TRACE_FUNCTION();
 
   /* Rethrow any write exceptions which has occured. */
+  if(fWriteThreadState == kException)
   {
-    std::scoped_lock l(fWriteMutex);
-
     if(fWriteException)
       std::rethrow_exception(fWriteException);
   }
 
   /* Rethrow any read exception which has occured. */
+  if(fReadThreadState == kException)
   {
-    std::scoped_lock l(fReadMutex);
-
     if(fReadException)
       std::rethrow_exception(fReadException);
   }
