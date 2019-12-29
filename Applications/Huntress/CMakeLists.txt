@@ -6,3 +6,4 @@ set(luna_huntress_SOURCES
 )
 
 add_executable(luna_huntress ${luna_huntress_SOURCES})
+target_link_libraries(luna_huntress ${LUNA_LIBRARIES})

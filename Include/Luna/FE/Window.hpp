@@ -25,8 +25,5 @@ namespace Luna::FE
   public:
     Window();
     virtual ~Window() override;
-
-
-
   };
 }

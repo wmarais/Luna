@@ -163,40 +163,16 @@ set(liblunafe_SOURCES
 
 add_library(liblunafe STATIC ${liblunafe_HEADERS} ${liblunafe_SOURCES})
 
-################################################################################
-# Session Client
-################################################################################
-#set(LunaFE_HEADERS
 
-#)
-
-#set(LunaFE_SOURCES
-#  FrontEnd/Source/Main.cpp
-#)
-
-#add_executable(LunaFE ${LunaFE_HEADERS} ${LunaFE_SOURCES})
-#target_link_libraries(LunaFE liblunafe libluna ${PNG_LIBRARIES})
-
-################################################################################
-# Session Server
-################################################################################
-#set(LunaBE_HEADERS
-#  BackEnd/Include/Luna/Server/Earth.hpp
-#)
-
-#set(LunaBE_SOURCES
-#  BackEnd/Source/Main.cpp
-#  BackEnd/Source/Luna/Server/Earth.cpp
-#)
-
-#add_executable(LunaBE ${LunaBE_HEADERS} ${LunaBE_SOURCES})
-
-#target_link_libraries(LunaBE liblunabe libluna ${Luna_LIBCONFIGPP}
-#    ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
+set(LUNA_LIBRARIES liblunabe liblunafe libluna ${Luna_LIBCONFIGPP} ${Luna_LIBUUID}
+    ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 
 subdirs(Tests/UnixSocket)
 
+# Build the Luna Back End.
 subdirs(Applications/BackEnd)
+
+# Build the Luna File / Directolry Explorer application.
 subdirs(Applications/Huntress)
 
