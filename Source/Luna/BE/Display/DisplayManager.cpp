@@ -1,7 +1,10 @@
-#include "../../../../Include/Luna/Server.hpp"
+#include "../../../../Include/Luna/BE/Display/DisplayManager.hpp"
+#include "../../../../Include/Luna/BE/Display/VideoCard.hpp"
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+#include "../../../../Include/Luna/Common/Settings.hpp"
 
-using namespace Luna::Common;
-using namespace Luna::Server;
+using namespace Luna;
+using namespace Luna::BE;
 
 //==============================================================================
 DisplayManager::DisplayManager(std::shared_ptr<Settings> settings) :

@@ -20,51 +20,45 @@
 //  }
 //
 //==============================================================================
+#pragma once
 
-#ifndef LUNA_SERVER_INPUT_HPP
-#define LUNA_SERVER_INPUT_HPP
+#include <memory>
+#include <thread>
+#include <atomic>
 
-#include "../../Common.hpp"
-#include "../SessionManager.hpp"
-
-#include "../../../../Include/Luna/Common.hpp"
-
-namespace Luna
+namespace Luna::BE
 {
-  namespace Server
+  class SessionManager;
+
+  class InputDevice
   {
-    class InputDevice
-    {
-      // Tracks if the monitoring thread should be running or not.
-      std::atomic_bool fRunning;
+    // Tracks if the monitoring thread should be running or not.
+    std::atomic_bool fRunning;
 
-      // Thread for running the monitor() function asynchronously.
-      std::unique_ptr<std::thread> fMonitorThread;
+    // Thread for running the monitor() function asynchronously.
+    std::unique_ptr<std::thread> fMonitorThread;
 
-    protected:
+  protected:
 
-      // The entry point for the thread. This is custom implemented for each
-      // input type.
-      virtual void monitor(std::shared_ptr<SessionManager> sm) = 0;
+    // The entry point for the thread. This is custom implemented for each
+    // input type.
+    virtual void monitor(std::shared_ptr<SessionManager> sm) = 0;
 
-    public:
+  public:
 
-      // Default constructor.
-      InputDevice();
+    // Default constructor.
+    InputDevice();
 
-      // Destructor.
-      virtual ~InputDevice();
+    // Destructor.
+    virtual ~InputDevice();
 
-      // Return true if the input is being monitored, else false.
-      bool isRunning() const;
+    // Return true if the input is being monitored, else false.
+    bool isRunning() const;
 
-      // Start the monitoring thread.
-      void start(std::shared_ptr<SessionManager> sm);
+    // Start the monitoring thread.
+    void start(std::shared_ptr<SessionManager> sm);
 
-      // Stop the monitoring thread.
-      void stop();
-    };
-  }
+    // Stop the monitoring thread.
+    void stop();
+  };
 }
-
-#endif // LUNA_SERVER_INPUT_HPP

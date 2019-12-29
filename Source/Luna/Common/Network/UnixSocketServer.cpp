@@ -6,6 +6,7 @@
 #include "../../../../Include/Luna/Common/Debug/Exception.hpp"
 #include "../../../../Include/Luna/Common/Debug/FunctionTracer.hpp"
 #include "../../../../Include/Luna/Common/Debug/Log.hpp"
+#include "../../../../Include/Luna/Common/Network/UnixSocketClient.hpp"
 #include "../../../../Include/Luna/Common/Network/UnixSocketServer.hpp"
 
 using namespace Luna;

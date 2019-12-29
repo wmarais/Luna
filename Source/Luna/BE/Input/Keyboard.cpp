@@ -1,8 +1,13 @@
+#include <fcntl.h>
+#include <linux/input.h>
+#include <unistd.h>
+
 #include "../../../../Include/Luna/BE/Input/Keyboard.hpp"
 #include "../../../../Include/Luna/Common/Event.hpp"
+#include "../../../../Include/Luna/Common/Macros.hpp"
 
-using namespace Luna::Server;
-using namespace Luna::Common;
+using namespace Luna;
+using namespace Luna::BE;
 
 //==============================================================================
 Keyboard::Keyboard(const std::string & path) : fPath(path) {}

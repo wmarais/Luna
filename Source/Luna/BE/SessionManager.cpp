@@ -1,6 +1,6 @@
 #include "../../../Include/Luna/BE/SessionManager.hpp"
 
-using namespace Luna::Server;
+using namespace Luna::BE;
 
 void SessionManager::start()
 {

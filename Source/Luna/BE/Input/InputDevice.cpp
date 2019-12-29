@@ -1,6 +1,6 @@
 #include "../../../../Include/Luna/BE/Input/InputDevice.hpp"
 
-using namespace Luna::Server;
+using namespace Luna::BE;
 
 //==============================================================================
 InputDevice::InputDevice() : fRunning(false) {}

@@ -1,7 +1,16 @@
-#include "../../../../Include/Luna/BE/Display/Display.hpp"
+#include <algorithm>
+#include <cstring>
+#include <xf86drm.h>
+#include <sys/mman.h>
 
-using namespace Luna::Common;
-using namespace Luna::Server;
+#include "../../../../Include/Luna/BE/Display/Display.hpp"
+#include "../../../../Include/Luna/Common/Debug/Exception.hpp"
+#include "../../../../Include/Luna/Common/Debug/FunctionTracer.hpp"
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+#include "../../../../Include/Luna/Common/Macros.hpp"
+
+using namespace Luna;
+using namespace Luna::BE;
 
 std::vector<uint32_t> Display::fUsedCRTCs;
 

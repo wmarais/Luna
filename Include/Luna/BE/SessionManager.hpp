@@ -15,24 +15,19 @@
 
 
 
-#ifndef LUNA_SERVER_SESSION_MANAGER_HPP
-#define LUNA_SERVER_SESSION_MANAGER_HPP
+#pragma once
 
 #include "../Common.hpp"
 
-namespace Luna
+namespace Luna::BE
 {
-  namespace Server
+  class SessionManager
   {
-    class SessionManager
-    {
 
-    public:
+  public:
 
-      void start();
+    void start();
 
-    };
-  }
+  };
 }
 
-#endif // LUNA_SERVER_SESSION_MANAGER_HPP

@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include "../Config.hpp"
+
 namespace Luna
 {
   template <typename T> class ColourBase
@@ -46,4 +48,12 @@ namespace Luna
       return fComponents[kAlpha];
     }
   };
+
+  /** Define the default colour type used by Luna. */
+  typedef ColourBase<LUNA_CONF_COLOUR_COMP_TYPE> Colour;
+
+  static const Colour kWhite(255, 255, 255, 255);
+  static const Colour kBlack(0, 0, 0, 255);
+  static const Colour kBlue(0, 0, 255, 255);
+  static const Colour kRed(255, 0, 0, 255);
 }

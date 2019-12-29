@@ -1,7 +1,7 @@
 #ifndef LUNA_COMMON_EXCEPTION_HPP
 #define LUNA_COMMON_EXCEPTION_HPP
 
-#include "../GeneralHeaders.hpp"
+#include <sstream>
 
 #define LUNA_THROW_EXCEPTION(msg) \
 {\

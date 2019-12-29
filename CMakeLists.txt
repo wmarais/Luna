@@ -55,6 +55,7 @@ endif()
 ################################################################################
 set(LunaCommon_HEADERS
   Include/Luna/Common.hpp
+  Include/Luna/Config.hpp
 
   Include/Luna/Common/Debug/Exception.hpp
   Include/Luna/Common/Debug/FunctionTracer.hpp
@@ -66,12 +67,11 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/CircularQueue.hpp
   Include/Luna/Common/Colour.hpp
   Include/Luna/Common/Event.hpp
-  Include/Luna/Common/GeneralHeaders.hpp
-  Include/Luna/Common/Math.hpp
+  Include/Luna/Common/Macros.hpp
   Include/Luna/Common/Rect.hpp
   Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
-  Include/Luna/Common/SystemHeaders.hpp
+  Include/Luna/Common/String.hpp
 )
 
 set(LunaCommon_SOURCES  
@@ -89,25 +89,10 @@ set(LunaCommon_SOURCES
 add_library(libluna STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
 
 ################################################################################
-# Client Specific Code
-################################################################################
-set(LunaClient_HEADERS
-  Include/Luna/Client.hpp
-  Include/Luna/FE/Event.hpp
-  Include/Luna/FE/Request.hpp
-)
-
-set(LunaClient_SOURCES
-
-)
-
-#add_library(LunaClient STATIC ${LunaClient_HEADERS} ${LunaClient_SOURCES})
-
-################################################################################
 # BACKEND LIBRARY
 ################################################################################
 set(liblunabe_HEADERS
-  Include/Luna/Server.hpp
+  Include/Luna/BackEnd.hpp
 
   Include/Luna/BE/Request.hpp
   Include/Luna/BE/Session.hpp
@@ -148,6 +133,7 @@ add_library(liblunabe STATIC ${liblunabe_HEADERS} ${liblunabe_SOURCES})
 # FRONTEND LIBRARY
 ################################################################################
 set(liblunafe_HEADERS
+  Include/Luna/FrontEnd.hpp
   Include/Luna/FE/Button.hpp
   Include/Luna/FE/Event.hpp
   Include/Luna/FE/GridLayout.hpp
@@ -180,34 +166,37 @@ add_library(liblunafe STATIC ${liblunafe_HEADERS} ${liblunafe_SOURCES})
 ################################################################################
 # Session Client
 ################################################################################
-set(LunaFE_HEADERS
+#set(LunaFE_HEADERS
 
-)
+#)
 
-set(LunaFE_SOURCES
-  FrontEnd/Source/Main.cpp
-)
+#set(LunaFE_SOURCES
+#  FrontEnd/Source/Main.cpp
+#)
 
-add_executable(LunaFE ${LunaFE_HEADERS} ${LunaFE_SOURCES})
-target_link_libraries(LunaFE liblunafe libluna ${PNG_LIBRARIES})
+#add_executable(LunaFE ${LunaFE_HEADERS} ${LunaFE_SOURCES})
+#target_link_libraries(LunaFE liblunafe libluna ${PNG_LIBRARIES})
 
 ################################################################################
 # Session Server
 ################################################################################
-set(LunaBE_HEADERS
-  BackEnd/Include/Luna/Server/Earth.hpp
-)
+#set(LunaBE_HEADERS
+#  BackEnd/Include/Luna/Server/Earth.hpp
+#)
 
-set(LunaBE_SOURCES
-  BackEnd/Source/Main.cpp
-  BackEnd/Source/Luna/Server/Earth.cpp
-)
+#set(LunaBE_SOURCES
+#  BackEnd/Source/Main.cpp
+#  BackEnd/Source/Luna/Server/Earth.cpp
+#)
 
-add_executable(LunaBE ${LunaBE_HEADERS} ${LunaBE_SOURCES})
+#add_executable(LunaBE ${LunaBE_HEADERS} ${LunaBE_SOURCES})
 
-target_link_libraries(LunaBE liblunabe libluna ${Luna_LIBCONFIGPP}
-    ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
+#target_link_libraries(LunaBE liblunabe libluna ${Luna_LIBCONFIGPP}
+#    ${Luna_LIBUUID} ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
 
 
 subdirs(Tests/UnixSocket)
+
+subdirs(Applications/BackEnd)
+subdirs(Applications/Huntress)
 

@@ -2,64 +2,38 @@
 #define LUNA_COMMON_HPP
 
 #include "Common/Debug/Exception.hpp"
-#include "Common/Debug/Log.hpp"
 #include "Common/Debug/FunctionTracer.hpp"
+#include "Common/Debug/Log.hpp"
+
 #include "Common/Network/UnixSocketClient.hpp"
 #include "Common/Network/UnixSocketServer.hpp"
 
-
-#include "Common/GeneralHeaders.hpp"
+#include "Common/CircularQueue.hpp"
 #include "Common/Colour.hpp"
 #include "Common/Event.hpp"
-
+#include "Common/Macros.hpp"
 #include "Common/Rect.hpp"
 #include "Common/Settings.hpp"
+#include "Common/SharedResource.hpp"
+#include "Common/String.hpp"
 
-
-#define LUNA_INLINE inline
-#define LUNA_UNUSED_PARAM(p) (void)p
 
 namespace Luna
 {
-  typedef ColourBase<uint8_t> Colour;
-  typedef RectBase<int64_t> Rect;
-
-  static const Colour kWhite(255, 255, 255, 255);
-  static const Colour kBlack(0, 0, 0, 255);
-  static const Colour kBlue(0, 0, 255, 255);
-  static const Colour kRed(255, 0, 0, 255);
-
-
-
-  namespace Common
+  template <typename R, typename D> class NonPtrCResource
   {
-    //==========================================================================
-    // An exception occurs if std::string is initialised with a NULL pointer
-    // which can happen when dealing with C strings. This function aliviate the
-    // the problem by initialising the std::string as an empty string ("") if a
-    // a NULL pointer is passed for str.
-    //==========================================================================
-    LUNA_INLINE static std::string toString(const char * str)
+    R fResource;
+    D fDeleter;
+    bool fPassTest;
+  public:
+    NonPtrCResource(const R & resource, bool passTest, const D & deleter) :
+      fResource(resource), fDeleter(deleter), fPassTest(passTest) {}
+
+    ~NonPtrCResource()
     {
-      return std::string(str ? str : "");
+      fDeleter(fResource);
     }
-
-    template <typename R, typename D> class NonPtrCResource
-    {
-      R fResource;
-      D fDeleter;
-      bool fPassTest;
-    public:
-      NonPtrCResource(const R & resource, bool passTest, const D & deleter) :
-        fResource(resource), fDeleter(deleter), fPassTest(passTest) {}
-
-      ~NonPtrCResource()
-      {
-        fDeleter(fResource);
-      }
-
-    };
-  }
+  };
 }
 
 

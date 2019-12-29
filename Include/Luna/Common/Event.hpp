@@ -1,7 +1,8 @@
 #ifndef LUNA_SERVER_EVENT_HPP
 #define LUNA_SERVER_EVENT_HPP
 
-#include "GeneralHeaders.hpp"
+#include <cstdint>
+#include <uuid/uuid.h>
 
 namespace Luna
 {

@@ -4,6 +4,8 @@
 #include <optional>
 #include <ostream>
 
+#include "../Config.hpp"
+
 namespace Luna
 {
   template <typename T> class RectBase
@@ -129,4 +131,7 @@ namespace Luna
           ", " << rect.y1() << "]";
     return os;
   }
+
+  /** Define the default rectangle type used for luna. */
+  typedef RectBase<LUNA_CONF_RECT_COMP_TYPE> Rect;
 }

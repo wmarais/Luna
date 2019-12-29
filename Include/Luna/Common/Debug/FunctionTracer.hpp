@@ -1,22 +1,21 @@
 #ifndef LUNA_COMMON_DEBUG_FUNCTION_TRACER_HPP
 #define LUNA_COMMON_DEBUG_FUNCTION_TRACER_HPP
 
-#define LUNA_TRACE_FUNCTION() Luna::Common::FunctionTracer luna_tracer(\
+#include <string>
+
+#define LUNA_TRACE_FUNCTION() Luna::FunctionTracer luna_tracer(\
   __FILE__, __FUNCTION__ , __LINE__)
 
 namespace Luna
 {
-  namespace Common
+  class FunctionTracer
   {
-    class FunctionTracer
-    {
-      std::string fExitMsg;
+    std::string fExitMsg;
 
-    public:
-      FunctionTracer(std::string file, std::string func, int line);
-      ~FunctionTracer();
-    };
-  }
+  public:
+    FunctionTracer(std::string file, std::string func, int line);
+    ~FunctionTracer();
+  };
 }
 
 #endif // LUNA_COMMON_DEBUG_FUNCTION_TRACER_HPP

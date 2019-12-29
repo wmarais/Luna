@@ -1,6 +1,6 @@
 #include "../../../Include/Luna/Common/Settings.hpp"
 
-using namespace Luna::Common;
+using namespace Luna;
 
 //==============================================================================
 Settings::Settings(const std::string & settingsPath) :

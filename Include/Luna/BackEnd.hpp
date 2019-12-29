@@ -1,5 +1,4 @@
-#ifndef LUNA_SERVER_HPP
-#define LUNA_SERVER_HPP
+#pragma once
 
 
 #include "BE/Display/DisplayManager.hpp"
@@ -19,4 +18,3 @@
 
 #include "BE/UDEV.hpp"
 
-#endif // LUNA_SERVER_HPP

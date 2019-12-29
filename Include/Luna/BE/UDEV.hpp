@@ -17,15 +17,21 @@
 // tries to add it back in, the addition will fail (non fatal) and the device
 // will not be monitored either. So ... all good?
 //##############################################################################
-#ifndef LUNA_SERVER_UDEV_HPP
-#define LUNA_SERVER_UDEV_HPP
+#pragma once
 
-#include "../../../Include/Luna/Common.hpp"
 
-namespace Luna
+#include <atomic>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <libudev.h>
+
+//#include "../../../Include/Luna/Common.hpp"
+
+namespace Luna::BE
 {
-  namespace Server
-  {
     class InputManager;
     class DisplayManager;
 
@@ -162,8 +168,4 @@ namespace Luna
       void processDevice(struct udev_device * dev, InputManager * im,
                          DisplayManager * dm, DeviceActions action);
     };
-  }
 }
-
-
-#endif // LUNA_SERVER_UDEV_HPP

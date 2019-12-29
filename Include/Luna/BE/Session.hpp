@@ -1,28 +1,27 @@
-#ifndef LUNA_SERVER_SESSION_HPP
-#define LUNA_SERVER_SESSION_HPP
+#pragma once
+
+#include <memory>
 
 namespace Luna
 {
-  namespace Server
-  {
-    class Session
-    {
-      enum class States
-      {
-        kLogin
-      };
-      
-      
-      
-    public:
-      
-      
-      
-      
-      
-
-    };
-  }
+  class UnixSocketClient;
 }
 
-#endif // LUNA_SERVER_SESSION_HPP
+
+namespace Luna::BE
+{
+  class Session
+  {
+    enum class States
+    {
+      kLogin
+    };
+
+    /** The Unix Socket that is used to listen for new Window Creations. */
+    std::unique_ptr<UnixSocketClient> fSocket;
+
+
+  public:
+
+  };
+}

@@ -1,24 +1,18 @@
-#ifndef LUNA_SERVER_INPUT_MOUSE_HPP
-#define LUNA_SERVER_INPUT_MOUSE_HPP
+#pragma once
 
 #include "InputDevice.hpp"
 
-namespace Luna
+namespace Luna::BE
 {
-  namespace Server
+  class Mouse : public InputDevice
   {
-    class Mouse : public InputDevice
-    {
-      std::string fPath;
+    std::string fPath;
 
-    public:
+  public:
 
-      Mouse(const std::string & path);
-      ~Mouse();
+    Mouse(const std::string & path);
+    ~Mouse();
 
-      void monitor(std::shared_ptr<SessionManager> sm);
-    };
-  }
+    void monitor(std::shared_ptr<SessionManager> sm);
+  };
 }
-
-#endif // LUNA_SERVER_INPUT_MOUSE_HPP

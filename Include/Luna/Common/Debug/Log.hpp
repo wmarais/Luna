@@ -1,5 +1,10 @@
-#ifndef LUNA_COMMON_LOG_HPP
-#define LUNA_COMMON_LOG_HPP
+#pragma once
+#include <atomic>
+#include <mutex>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <thread>
 
 #define LUNA_LOG_MSG(lvl, msg) \
 {\
@@ -8,7 +13,7 @@
   if (i != std::string::npos) file = file.substr(i+1, file.length() - i);\
   std::stringstream ss; ss << lvl << " | " << file << " | " << \
     __FUNCTION__ << " | " << __LINE__ << " | " << msg;\
-  Luna::Common::Log::ptr()->write(ss.str());\
+  Luna::Log::ptr()->write(ss.str());\
 }
 
 
@@ -22,33 +27,28 @@
 
 namespace Luna
 {
-  namespace Common
+  class Log
   {
-    class Log
-    {
-      static Log fInstance;
+    static Log fInstance;
 
-      std::queue<std::string> fMessages;
+    std::queue<std::string> fMessages;
 
-      std::unique_ptr<std::thread> fWriteThread;
+    std::unique_ptr<std::thread> fWriteThread;
 
-      std::mutex fMessagesMutex;
+    std::mutex fMessagesMutex;
 
-      std::atomic_bool fWriting;
+    std::atomic_bool fWriting;
 
-      Log();
-      ~Log();
+    Log();
+    ~Log();
 
-      void writeThread();
-      void flush();
+    void writeThread();
+    void flush();
 
-    public:
+  public:
 
-      static Log * ptr();
-      void write(std::string message);
-    };
-  }
+    static Log * ptr();
+    void write(std::string message);
+  };
 }
-
-#endif // LUNA_COMMON_LOG_HPP
 

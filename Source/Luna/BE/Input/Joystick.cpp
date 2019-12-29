@@ -1,6 +1,6 @@
 #include "../../../../Include/Luna/BE/Input/Joystick.hpp"
-
-using namespace Luna::Server;
+#include "../../../../Include/Luna/Common/Macros.hpp"
+using namespace Luna::BE;
 
 //==============================================================================
 Joystick::Joystick(std::string path)

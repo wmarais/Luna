@@ -8,10 +8,10 @@
 #include <optional>
 #include <string>
 
-#include "UnixSocketClient.hpp"
-
 namespace Luna
 {
+  class UnixSocketClient;
+
   class UnixSocketServer
   {
     /** The states of the listening thread. */

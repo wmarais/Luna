@@ -1,6 +1,8 @@
-#include "../../../../Include/Luna/Common.hpp"
+#include <iostream>
 
-using namespace Luna::Common;
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+
+using namespace Luna;
 
 Log Log::fInstance;
 

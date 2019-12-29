@@ -1,4 +1,6 @@
 #include <vector>
+#include <iostream>
+#include <unistd.h>
 #include "../../Include/Luna/Common.hpp"
 
 using namespace Luna;

@@ -1,7 +1,12 @@
-#include "../../../Include/Luna/Server.hpp"
+#include "../../../Include/Luna/BE/Display/DisplayManager.hpp"
+#include "../../../Include/Luna/BE/Input/InputManager.hpp"
+#include "../../../Include/Luna/Common/Debug/Exception.hpp"
+#include "../../../Include/Luna/Common/Debug/Log.hpp"
+#include "../../../Include/Luna/Common/String.hpp"
 
-using namespace Luna::Common;
-using namespace Luna::Server;
+
+using namespace Luna;
+using namespace Luna::BE;
 
 //==============================================================================
 const char * UDEV::InputDeviceTypeProps[UDEV::kInputDevicesCount] =

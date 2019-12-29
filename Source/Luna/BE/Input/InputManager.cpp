@@ -1,7 +1,16 @@
 #include "../../../../Include/Luna/BE/Input/InputManager.hpp"
 
-using namespace Luna::Common;
-using namespace Luna::Server;
+#include "../../../../Include/Luna/BE/Input/Joystick.hpp"
+#include "../../../../Include/Luna/BE/Input/Keyboard.hpp"
+#include "../../../../Include/Luna/BE/Input/Mouse.hpp"
+
+
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+#include "../../../../Include/Luna/Common/Macros.hpp"
+#include "../../../../Include/Luna/Common/Settings.hpp"
+
+using namespace Luna;
+using namespace Luna::BE;
 
 //==============================================================================
 InputManager::InputManager(const Settings * settings)

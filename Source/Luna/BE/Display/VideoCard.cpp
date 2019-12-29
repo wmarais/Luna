@@ -1,7 +1,16 @@
-#include "../../../../Include/Luna/Server.hpp"
+#include <xf86drm.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
+#include <sys/mman.h>
 
-using namespace Luna::Common;
-using namespace Luna::Server;
+#include "../../../../Include/Luna/BE/Display/VideoCard.hpp"
+#include "../../../../Include/Luna/Common/Debug/Exception.hpp"
+#include "../../../../Include/Luna/Common/Debug/FunctionTracer.hpp"
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+
+using namespace Luna;
+using namespace Luna::BE;
 
 //==============================================================================
 VideoCard::VideoCard(const std::string & devNode) : fFD(-1)

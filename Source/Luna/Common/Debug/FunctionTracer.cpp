@@ -1,6 +1,9 @@
-#include "../../../../Include/Luna/Common.hpp"
+#include <sstream>
 
-using namespace Luna::Common;
+#include "../../../../Include/Luna/Common/Debug/FunctionTracer.hpp"
+#include "../../../../Include/Luna/Common/Debug/Log.hpp"
+
+using namespace Luna;
 
 //==============================================================================
 FunctionTracer::FunctionTracer(std::string file, std::string func, int line)
@@ -20,7 +23,7 @@ FunctionTracer::FunctionTracer(std::string file, std::string func, int line)
         line << " | ENTER.";
 
   // Write a log message.
-  Luna::Common::Log::ptr()->write(ss.str());
+  Luna::Log::ptr()->write(ss.str());
 
   // Create the exit message.
   ss.str(std::string());
@@ -34,5 +37,5 @@ FunctionTracer::FunctionTracer(std::string file, std::string func, int line)
 FunctionTracer::~FunctionTracer()
 {
   // Write a log message.
-  Luna::Common::Log::ptr()->write(fExitMsg);
+  Luna::Log::ptr()->write(fExitMsg);
 }
