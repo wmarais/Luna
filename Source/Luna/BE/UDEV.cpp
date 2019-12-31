@@ -2,7 +2,7 @@
 #include "../../../Include/Luna/BE/Input/InputManager.hpp"
 #include "../../../Include/Luna/Common/Debug/Exception.hpp"
 #include "../../../Include/Luna/Common/Debug/Log.hpp"
-#include "../../../Include/Luna/Common/String.hpp"
+#include "../../../Include/Luna/Common/Utils.hpp"
 
 
 using namespace Luna;

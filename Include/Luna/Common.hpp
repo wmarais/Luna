@@ -10,12 +10,14 @@
 
 #include "Common/CircularQueue.hpp"
 #include "Common/Colour.hpp"
+#include "Common/Directory.hpp"
 #include "Common/Event.hpp"
 #include "Common/Macros.hpp"
 #include "Common/Rect.hpp"
 #include "Common/Settings.hpp"
 #include "Common/SharedResource.hpp"
-#include "Common/String.hpp"
+#include "Common/User.hpp"
+#include "Common/Utils.hpp"
 
 
 namespace Luna

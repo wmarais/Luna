@@ -4,9 +4,12 @@ using namespace Luna;
 using namespace Luna::FE;
 
 /******************************************************************************/
-Window::Window()
+Window::Window() : fState(kNormalised)
 {
+  /* Create the socket connection to the session. */
+  fSocket = std::make_unique<UnixSocketClient>(Directory::sockPath());
 
+  /* Open the session's frame buffer. */
 }
 
 /******************************************************************************/
@@ -99,5 +102,11 @@ void Window::repaint(Renderer & renderer, const Rect & area)
     renderer.fill(border.value(), fBorderColour);
 
   /* Repaint the window header. */
+}
+
+/******************************************************************************/
+bool Window::isClosed() const
+{
+  return fState == kClosed;
 }
 

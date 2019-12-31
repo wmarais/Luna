@@ -13,8 +13,8 @@
 #include "BE/Input/Keyboard.hpp"
 #include "BE/Input/Mouse.hpp"
 
-
+#include "BE/Request.hpp"
+#include "BE/Session.hpp"
 #include "BE/SessionManager.hpp"
-
 #include "BE/UDEV.hpp"
 

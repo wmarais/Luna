@@ -7,9 +7,9 @@ using namespace Luna::FE;
     throw "Failed to call: " #statement ""
 
 
-#define LUNA_LOG_ERROR(msg)   std::cout << "ERROR - " << msg << std::endl
+//#define LUNA_LOG_ERROR(msg)   std::cout << "ERROR - " << msg << std::endl
 #define LUNA_FATAL_ERROR(msg)  std::cerr << "FATAL - " << msg << std::endl
-#define LUNA_LOG_INFO(msg)    std::cout << "INFO - " << msg << std::endl
+//#define LUNA_LOG_INFO(msg)    std::cout << "INFO - " << msg << std::endl
 
 const std::string RendererVulkan::kValidationLayerPropName =
         "VK_LAYER_KHRONOS_validation";

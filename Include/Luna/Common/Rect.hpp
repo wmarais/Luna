@@ -114,6 +114,26 @@ namespace Luna
       /* Return the intersection between the rectangles. */
       return temp;
     }
+
+    /***********************************************************************//**
+     * Calculate the union of the two rectangles.
+     *
+     * @param rect  The other rectangle to test against.
+     * @return      A rectangle of adequate size such that both rectangles are
+     *              enclosed without wasting space.
+     ***************************************************************************/
+    RectBase<T> calcUnion(const RectBase<T> & rect) const
+    {
+      /* Calculate the combined rect that will enapsulate both rectangles. */
+      RectBase<T> temp;
+      temp.fX0 = fX0 < rect.fX0 ? fX0 : rect.fX0;
+      temp.fY0 = fY0 < rect.fY0 ? fY0 : rect.fY0;
+      temp.fX1 = fX1 > rect.fX1 ? fX1 : rect.fX1;
+      temp.fY1 = fY1 > rect.fY1 ? fY1 : rect.fY1;
+
+      /* Return the union of the two rectangles. */
+      return temp;
+    }
   };
 
   /*************************************************************************//**

@@ -2,6 +2,10 @@
 
 #include <string>
 
+
+#include "../Config.hpp"
+#include "Debug/Exception.hpp"
+
 namespace Luna
 {
   /*************************************************************************//**

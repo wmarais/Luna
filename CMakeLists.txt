@@ -66,12 +66,17 @@ set(LunaCommon_HEADERS
 
   Include/Luna/Common/CircularQueue.hpp
   Include/Luna/Common/Colour.hpp
+  Include/Luna/Common/Directory.hpp
   Include/Luna/Common/Event.hpp
+  Include/Luna/Common/FrameBuffer.hpp
   Include/Luna/Common/Macros.hpp
   Include/Luna/Common/Rect.hpp
+  Include/Luna/Common/RPC.hpp
+  Include/Luna/Common/Serialiser.hpp
   Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
-  Include/Luna/Common/String.hpp
+  Include/Luna/Common/Utils.hpp
+  Include/Luna/Common/User.hpp
 )
 
 set(LunaCommon_SOURCES  
@@ -83,7 +88,12 @@ set(LunaCommon_SOURCES
   Source/Luna/Common/Network/UnixSocketServer.cpp
 
   Source/Luna/Common/Event.cpp
+  Source/Luna/Common/FrameBuffer.cpp
+  Source/Luna/Common/Directory.cpp
+  Source/Luna/Common/Serialiser.cpp
   Source/Luna/Common/Settings.cpp
+  Source/Luna/Common/Utils.cpp
+  Source/Luna/Common/User.cpp
 )
 
 add_library(libluna STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
@@ -98,6 +108,7 @@ set(liblunabe_HEADERS
   Include/Luna/BE/Session.hpp
   Include/Luna/BE/SessionManager.hpp
   Include/Luna/BE/UDEV.hpp
+  Include/Luna/BE/Window.hpp
 
   Include/Luna/BE/Display/Display.hpp
   Include/Luna/BE/Display/DisplayManager.hpp
@@ -115,6 +126,7 @@ set(liblunabe_SOURCES
   Source/Luna/BE/Session.cpp
   Source/Luna/BE/SessionManager.cpp
   Source/Luna/BE/UDEV.cpp
+  Source/Luna/BE/Window.cpp
 
   Source/Luna/BE/Display/Display.cpp
   Source/Luna/BE/Display/DisplayManager.cpp
@@ -165,7 +177,7 @@ add_library(liblunafe STATIC ${liblunafe_HEADERS} ${liblunafe_SOURCES})
 
 
 set(LUNA_LIBRARIES liblunabe liblunafe libluna ${Luna_LIBCONFIGPP} ${Luna_LIBUUID}
-    ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM})
+    ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM} ${PNG_LIBRARIES})
 
 
 subdirs(Tests/UnixSocket)

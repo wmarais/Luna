@@ -17,5 +17,9 @@ Huntress::Huntress(int argc, char * argv[])
 /******************************************************************************/
 void Huntress::run()
 {
-
+  /* Keep looping while the window is open. */
+  while(!fWindow->isClosed())
+  {
+    /* Update the window. */
+  }
 }

@@ -7,7 +7,21 @@ namespace Luna::FE
 {
   class Window : public Object
   {
+    /** The Unix Socket used to communicate with the session. */
+    std::unique_ptr<UnixSocketClient> fSocket;
+
+
   protected:
+    enum States
+    {
+      kNormalised,
+      kMinimised,
+      kMaximised,
+      kClosed
+    };
+
+    std::atomic<States> fState;
+
 
     int64_t fBorderWidth;
 
@@ -25,5 +39,7 @@ namespace Luna::FE
   public:
     Window();
     virtual ~Window() override;
+
+    bool isClosed() const;
   };
 }
