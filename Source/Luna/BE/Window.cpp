@@ -17,7 +17,7 @@ Window::Window(std::unique_ptr<UnixSocketClient> & socket) :
 void Window::sendEvent(const Event & event)
 {
   /* Serialise the event. */
-  Serialise(event, fEventBuffer);
+  //Serialise(event, fEventBuffer);
 
   /* Keep looping until the event is send. */
   while(!fSocket->writeBlockSwap(fEventBuffer))

@@ -3,8 +3,10 @@
 
 #include <string>
 
-#define LUNA_TRACE_FUNCTION() Luna::FunctionTracer luna_tracer(\
-  __FILE__, __FUNCTION__ , __LINE__)
+#define LUNA_TRACE_FUNCTION()
+
+//#define LUNA_TRACE_FUNCTION() Luna::FunctionTracer luna_tracer(\
+//  __FILE__, __FUNCTION__ , __LINE__)
 
 namespace Luna
 {

@@ -24,7 +24,7 @@ include_directories("/usr/include/libdrm")
 set(GCC_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
 set(GCC_LINK_FLAGS    "-lgcov")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable exception handling.
@@ -61,8 +61,16 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/Debug/FunctionTracer.hpp
   Include/Luna/Common/Debug/Log.hpp
 
+  Include/Luna/Common/FileSystem/FilePath.hpp
+
+  Include/Luna/Common/Network/DNS.hpp
+  Include/Luna/Common/Network/IPAddress.hpp
+  Include/Luna/Common/Network/Socket.hpp
+  Include/Luna/Common/Network/SocketAddress.hpp
   Include/Luna/Common/Network/UnixSocketClient.hpp
   Include/Luna/Common/Network/UnixSocketServer.hpp
+
+  Include/Luna/Common/RemoteDesktop/Crypto.hpp
 
   Include/Luna/Common/CircularQueue.hpp
   Include/Luna/Common/Colour.hpp
@@ -71,12 +79,14 @@ set(LunaCommon_HEADERS
   Include/Luna/Common/FrameBuffer.hpp
   Include/Luna/Common/Macros.hpp
   Include/Luna/Common/Rect.hpp
+  Include/Luna/Common/ReusableID.hpp
   Include/Luna/Common/RPC.hpp
   Include/Luna/Common/Serialiser.hpp
   Include/Luna/Common/SharedResource.hpp
   Include/Luna/Common/Settings.hpp
   Include/Luna/Common/Utils.hpp
   Include/Luna/Common/User.hpp
+  Include/Luna/Common/SystemHeaders.hpp
 )
 
 set(LunaCommon_SOURCES  
@@ -84,6 +94,10 @@ set(LunaCommon_SOURCES
   Source/Luna/Common/Debug/FunctionTracer.cpp
   Source/Luna/Common/Debug/Log.cpp
 
+  Source/Luna/Common/Network/DNS.cpp
+  Source/Luna/Common/Network/IPAddress.cpp
+  Source/Luna/Common/Network/Socket.cpp
+  Source/Luna/Common/Network/SocketAddress.cpp
   Source/Luna/Common/Network/UnixSocketClient.cpp
   Source/Luna/Common/Network/UnixSocketServer.cpp
 
@@ -97,6 +111,7 @@ set(LunaCommon_SOURCES
 )
 
 add_library(libluna STATIC ${LunaCommon_HEADERS} ${LunaCommon_SOURCES})
+target_link_libraries(libluna pthread)
 
 ################################################################################
 # BACKEND LIBRARY
@@ -175,12 +190,12 @@ set(liblunafe_SOURCES
 
 add_library(liblunafe STATIC ${liblunafe_HEADERS} ${liblunafe_SOURCES})
 
-
 set(LUNA_LIBRARIES liblunabe liblunafe libluna ${Luna_LIBCONFIGPP} ${Luna_LIBUUID}
     ${Luna_LIBPTHREAD} ${Luna_LIBUDEV} ${Luna_LIBDRM} ${PNG_LIBRARIES})
 
 
 subdirs(Tests/UnixSocket)
+subdirs(Tests)
 
 # Build the Luna Back End.
 subdirs(Applications/BackEnd)
@@ -188,3 +203,28 @@ subdirs(Applications/BackEnd)
 # Build the Luna File / Directolry Explorer application.
 subdirs(Applications/Huntress)
 
+find_package(benchmark)
+if(benchmark_FOUND)
+    subdirs(Benchmark)
+endif()
+
+################################################################################
+## Find the Doxygen tool.
+#find_package(Doxygen)
+#if(DOXYGEN_FOUND)
+#    # Set the input and output files.
+#    set(DOXYGEN_IN "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
+#    set(DOXYGEN_OUT "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
+
+#    # Configure the file.
+#    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+#    # Build the documentation.
+#    add_custom_target(lunadocs ALL
+#        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#        COMMENT "Generating API documentation with Doxygen."
+#        VERBATIM)
+#else()
+#    message("Doxygen need to be installed to generate the API documentation.")
+#endif()

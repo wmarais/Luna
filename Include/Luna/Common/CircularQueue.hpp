@@ -21,22 +21,24 @@ namespace Luna
       fElements = std::make_unique<T[]>(kMaxSize);
     }
 
-    /***********************************************************************//**
-     * This function returns a reference to the head node in the circular
-     * queue. The user can directly write to this node. This is done to reduce
-     * the number of memory allocations and copies.
-     *
-     * @return  A reference to the head node in the queue or False if there is
-     *          no space left.
-     **************************************************************************/
-    std::optional<T*> push()
+    T *elements() { return fElements.get(); }
+
+    /***********************************************************************/ /**
+                                                                               * This function returns a reference to the head node in the circular
+                                                                               * queue. The user can directly write to this node. This is done to reduce
+                                                                               * the number of memory allocations and copies.
+                                                                               *
+                                                                               * @return  A reference to the head node in the queue or False if there is
+                                                                               *          no space left.
+                                                                               **************************************************************************/
+    std::optional<T *> push()
     {
       /* Check if there is any space left. */
       if(fSize >= kMaxSize)
         return {};
 
       /* Get the element reference. */
-      T * ref = &(fElements[fTail++]);
+      T *ref = &(fElements[fTail++]);
 
       /* Check if the tail pointer should be wrapped around. */
       if(fTail >= kMaxSize)
@@ -49,20 +51,20 @@ namespace Luna
       return ref;
     }
 
-    /***********************************************************************//**
-     * Returns a reference to the head node which contains a valid element or
-     * False if the node is not valid.
-     *
-     * @return  The reference to the element.
-     **************************************************************************/
-    std::optional<T*> pop()
+    /***********************************************************************/ /**
+                                                                               * Returns a reference to the head node which contains a valid element or
+                                                                               * False if the node is not valid.
+                                                                               *
+                                                                               * @return  The reference to the element.
+                                                                               **************************************************************************/
+    std::optional<T *> pop()
     {
       /* Check if there are any elements in the queue. */
       if(fSize <= 0)
         return {};
 
       /* Get the reference to the element. */
-      T * ref = &(fElements[fHead++]);
+      T *ref = &(fElements[fHead++]);
 
       /* Check if the head should be wrapped around. */
       if(fHead >= kMaxSize)
@@ -75,4 +77,4 @@ namespace Luna
       return ref;
     }
   };
-}
+} // namespace Luna

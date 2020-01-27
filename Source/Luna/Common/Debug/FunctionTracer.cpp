@@ -12,23 +12,21 @@ FunctionTracer::FunctionTracer(std::string file, std::string func, int line)
   size_t i = file.rfind('/', file.length());
 
   // Check if it was found.
-  if (i != std::string::npos)
+  if(i != std::string::npos)
   {
-    file = file.substr(i+1, file.length() - i);
+    file = file.substr(i + 1, file.length() - i);
   }
 
   // Create the entry message.
   std::stringstream ss;
-  ss << "TRACE | " << file << " | " << func << " | " <<
-        line << " | ENTER.";
+  ss << "TRACE | " << file << " | " << func << " | " << line << " | ENTER.";
 
   // Write a log message.
-  Luna::Log::ptr()->write(ss.str());
+  Luna::Log::ptr()->write(Log::Levels::Debug, ss.str());
 
   // Create the exit message.
   ss.str(std::string());
-  ss << "TRACE | " << file << " | " << func << " | " <<
-        line << " | EXIT.";
+  ss << "TRACE | " << file << " | " << func << " | " << line << " | EXIT.";
 
   fExitMsg = ss.str();
 }
@@ -37,5 +35,5 @@ FunctionTracer::FunctionTracer(std::string file, std::string func, int line)
 FunctionTracer::~FunctionTracer()
 {
   // Write a log message.
-  Luna::Log::ptr()->write(fExitMsg);
+  Luna::Log::ptr()->write(Log::Levels::Debug, fExitMsg);
 }

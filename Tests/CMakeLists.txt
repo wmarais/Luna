@@ -1,0 +1,2 @@
+add_executable(LunaTest_DNS LunaTest_DNS.cpp)
+target_link_libraries(LunaTest_DNS libluna)

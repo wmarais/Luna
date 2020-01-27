@@ -1,0 +1,22 @@
+---
+AlignAfterOpenBracket: DontAlign
+AlignOperands: 'true'
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+BreakBeforeBraces: Allman
+ColumnLimit: '80'
+CommentPragmas: '\/\/\*\*$'
+CompactNamespaces: 'true'
+IndentCaseLabels: 'false'
+IndentWidth: '2'
+Language: Cpp
+NamespaceIndentation: All
+ReflowComments: 'true'
+SpaceBeforeParens: Never
+SpaceInEmptyParentheses: 'false'
+SpacesInAngles: 'false'
+Standard: Cpp11
+TabWidth: '2'
+UseTab: Never
+
+...

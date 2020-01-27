@@ -25,28 +25,28 @@ int add(int x, int y)
 /******************************************************************************/
 int main(int argc, char * argv[])
 {
-  RPC rpc;
+//  RPC rpc;
 
-  /* Add a handler function. The parrameters are automatically extracted by the
-   * template. */
-  rpc.registerHandler("add", add);
+//  /* Add a handler function. The parrameters are automatically extracted by the
+//   * template. */
+//  rpc.registerHandler("add", add);
 
-  /* Execute the function on the remote end. This function is asyncronys / non
-   * blocking. */
-  auto id = rpc.invokeStart<int, int, int>("add", 2, 7);
+//  /* Execute the function on the remote end. This function is asyncronys / non
+//   * blocking. */
+//  auto id = rpc.invokeStart<int, int, int>("add", 2, 7);
 
-  /* Processess the commands. */
-  rpc.update();
+//  /* Processess the commands. */
+//  rpc.update();
 
-  /* Get the result of the RPC. */
-  auto result = rpc.invokeFinished<int>(id);
+//  /* Get the result of the RPC. */
+//  auto result = rpc.invokeFinished<int>(id);
 
-  if(result)
-  {
-    /* Print the result. */
-    std::cout << "2+7 = " << result.value() << std::endl;
+//  if(result)
+//  {
+//    /* Print the result. */
+//    std::cout << "2+7 = " << result.value() << std::endl;
 
-  }
+//  }
   return EXIT_SUCCESS;
 }
 

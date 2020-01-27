@@ -136,3 +136,19 @@ Then execute GProf:
 ```
 gprof LunaEarth gmon.out > analysis.txt
 ```
+
+### Google Benchmark Support
+To use google benchmark, it is necesary to install the libraries first:
+
+```
+sudo apt-get install libbenchmark-dev libbenchmark-tools
+```
+
+## Doxygen
+In order to generate doxygen documentation, the doxygen tool must be installed,
+if not installed the option to build the documentation will be automatically
+disabled.
+
+```
+sudo apt-get install doxygen
+```
